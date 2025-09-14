@@ -1,4 +1,5 @@
 using FileNet.WebFramework;
+using FileNet.WebFramework.ScanIngest;
 using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,13 @@ builder.WebHost.ConfigureKestrel(o =>
 {
     o.Limits.MaxRequestBodySize = 100L * 1024 * 1024;
 });
+
+builder.Services.Configure<ScanIngestOptions>(
+    builder.Configuration.GetSection("ScanIngest"));
+
+builder.Services.AddSingleton<ScanFileNameParser>();
+
+builder.Services.AddHostedService<ScanIngestHostedService>();
 
 var app = builder.Build();
 
