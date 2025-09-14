@@ -1,0 +1,40 @@
+﻿@page
+@model FileNet.WebApplication.Pages.Employees.CreateModel
+@{
+    ViewData["Title"] = "New Employee";
+}
+<div class="container mt-4" style="max-width:720px">
+    <h2 class="mb-3">New Employee</h2>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Error))
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+
+    <form method="post" class="needs-validation" novalidate>
+        <div class="mb-3">
+            <label asp-for="Input.NationalCode" class="form-label"></label>
+            <input asp-for="Input.NationalCode" class="form-control" />
+            <span class="text-danger" asp-validation-for="Input.NationalCode"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.FirstName" class="form-label"></label>
+            <input asp-for="Input.FirstName" class="form-control" />
+            <span class="text-danger" asp-validation-for="Input.FirstName"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.LastName" class="form-label"></label>
+            <input asp-for="Input.LastName" class="form-control" />
+            <span class="text-danger" asp-validation-for="Input.LastName"></span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-page="Index" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
