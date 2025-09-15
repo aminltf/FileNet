@@ -19,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.NationalCode).HasMaxLength(20).IsRequired();
             b.Property(e => e.FirstName).HasMaxLength(100).IsRequired();
             b.Property(e => e.LastName).HasMaxLength(100).IsRequired();
+            b.Property(d => d.Gender).HasConversion<byte>().IsRequired();
 
             b.HasIndex(e => e.NationalCode).IsUnique();
         });

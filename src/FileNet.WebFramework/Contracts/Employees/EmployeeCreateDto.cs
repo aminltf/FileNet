@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using FileNet.WebFramework.Enums;
 
 namespace FileNet.WebFramework.Contracts.Employees;
 
@@ -12,4 +13,7 @@ public class EmployeeCreateDto
 
     [Required, StringLength(100)]
     public string LastName { get; set; } = default!;
+
+    [Required]
+    public Gender Gender { get; set; }
 }

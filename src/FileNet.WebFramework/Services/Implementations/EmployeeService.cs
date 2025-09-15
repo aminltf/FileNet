@@ -19,7 +19,8 @@ public class EmployeeService(AppDbContext db) : IEmployeeService
         {
             NationalCode = dto.NationalCode.Trim(),
             FirstName = dto.FirstName.Trim(),
-            LastName = dto.LastName.Trim()
+            LastName = dto.LastName.Trim(),
+            Gender = dto.Gender
         };
 
         db.Employees.Add(entity);
@@ -73,6 +74,7 @@ public class EmployeeService(AppDbContext db) : IEmployeeService
         entity.NationalCode = dto.NationalCode.Trim();
         entity.FirstName = dto.FirstName.Trim();
         entity.LastName = dto.LastName.Trim();
+        entity.Gender = dto.Gender;
 
         await db.SaveChangesAsync(ct);
     }

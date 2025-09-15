@@ -3,6 +3,7 @@ using FileNet.WebFramework.Services.Abstractions;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using FileNet.WebFramework.Enums;
 
 namespace FileNet.WebApplication.Pages.Employees;
 
@@ -49,5 +50,11 @@ public class CreateModel(IEmployeeService service) : PageModel
 
         [Required, StringLength(100)]
         public string LastName { get; set; } = default!;
+
+        [Required]
+        public Gender Gender { get; set; }
     }
+
+    public static IEnumerable<(byte Value, string Name)> Genders =>
+        Enum.GetValues<Gender>().Select(e => ((byte)e, e.ToString()));
 }
