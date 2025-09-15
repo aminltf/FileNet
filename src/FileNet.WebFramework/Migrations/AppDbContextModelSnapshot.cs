@@ -22,6 +22,43 @@ namespace FileNet.WebFramework.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("FileNet.WebFramework.Entities.Department", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(31)
+                        .HasColumnType("nvarchar(31)");
+
+                    b.Property<DateTimeOffset>("CreatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(511)
+                        .HasColumnType("nvarchar(511)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(127)
+                        .HasColumnType("nvarchar(127)");
+
+                    b.Property<DateTimeOffset?>("UpdatedOn")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Departments", (string)null);
+                });
+
             modelBuilder.Entity("FileNet.WebFramework.Entities.Document", b =>
                 {
                     b.Property<Guid>("Id")
@@ -76,13 +113,16 @@ namespace FileNet.WebFramework.Migrations
                     b.Property<DateTimeOffset>("CreatedOn")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("int");
+                    b.Property<byte>("Gender")
+                        .HasColumnType("tinyint");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -99,6 +139,8 @@ namespace FileNet.WebFramework.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DepartmentId");
+
                     b.HasIndex("NationalCode")
                         .IsUnique();
 
@@ -114,6 +156,22 @@ namespace FileNet.WebFramework.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("FileNet.WebFramework.Entities.Employee", b =>
+                {
+                    b.HasOne("FileNet.WebFramework.Entities.Department", "Department")
+                        .WithMany("Employees")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("FileNet.WebFramework.Entities.Department", b =>
+                {
+                    b.Navigation("Employees");
                 });
 
             modelBuilder.Entity("FileNet.WebFramework.Entities.Employee", b =>

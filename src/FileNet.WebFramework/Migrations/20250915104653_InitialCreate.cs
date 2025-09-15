@@ -12,6 +12,22 @@ namespace FileNet.WebFramework.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Departments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(31)", maxLength: 31, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(127)", maxLength: 127, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(511)", maxLength: 511, nullable: true),
+                    CreatedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Departments", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Employees",
                 columns: table => new
                 {
@@ -19,13 +35,20 @@ namespace FileNet.WebFramework.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     NationalCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Gender = table.Column<int>(type: "int", nullable: false),
+                    Gender = table.Column<byte>(type: "tinyint", nullable: false),
                     CreatedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    UpdatedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                    UpdatedOn = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    DepartmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Employees", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Employees_Departments_DepartmentId",
+                        column: x => x.DepartmentId,
+                        principalTable: "Departments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -54,6 +77,18 @@ namespace FileNet.WebFramework.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Departments_Code",
+                table: "Departments",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Departments_Name",
+                table: "Departments",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Documents_EmployeeId",
                 table: "Documents",
                 column: "EmployeeId");
@@ -62,6 +97,11 @@ namespace FileNet.WebFramework.Migrations
                 name: "IX_Documents_EmployeeId_Category",
                 table: "Documents",
                 columns: new[] { "EmployeeId", "Category" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employees_DepartmentId",
+                table: "Employees",
+                column: "DepartmentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Employees_NationalCode",
@@ -78,6 +118,9 @@ namespace FileNet.WebFramework.Migrations
 
             migrationBuilder.DropTable(
                 name: "Employees");
+
+            migrationBuilder.DropTable(
+                name: "Departments");
         }
     }
 }

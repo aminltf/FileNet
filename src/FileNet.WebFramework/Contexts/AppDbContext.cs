@@ -7,6 +7,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<Department> Departments => Set<Department>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -20,6 +21,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             b.Property(e => e.FirstName).HasMaxLength(100).IsRequired();
             b.Property(e => e.LastName).HasMaxLength(100).IsRequired();
             b.Property(d => d.Gender).HasConversion<byte>().IsRequired();
+
+            b.HasOne(e => e.Department)
+             .WithMany(d => d.Employees)
+             .HasForeignKey(e => e.DepartmentId)
+             .OnDelete(DeleteBehavior.Restrict);
 
             b.HasIndex(e => e.NationalCode).IsUnique();
         });
@@ -45,6 +51,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             b.HasIndex(d => d.EmployeeId);
             b.HasIndex(d => new { d.EmployeeId, d.Category });
+        });
+
+        // Department
+        model.Entity<Department>(b =>
+        {
+            b.ToTable("Departments");
+            b.HasKey(d => d.Id);
+
+            b.Property(d => d.Code).HasMaxLength(31).IsRequired();
+            b.Property(d => d.Name).HasMaxLength(127).IsRequired();
+            b.Property(d => d.Description).HasMaxLength(511);
+
+            b.HasIndex(d => d.Code).IsUnique();
+            b.HasIndex(d => d.Name).IsUnique();
         });
     }
 }

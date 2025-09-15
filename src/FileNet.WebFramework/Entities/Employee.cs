@@ -14,6 +14,9 @@ public class Employee
     public DateTimeOffset CreatedOn { get; set; } = DateTimeOffset.Now;
     public DateTimeOffset UpdatedOn { get; set; } = DateTimeOffset.Now;
 
+    public Guid DepartmentId { get; set; }
+    public Department Department { get; set; } = default!;
+
     public ICollection<Document> Documents { get; set; } = new List<Document>();
 
     public Employee()
