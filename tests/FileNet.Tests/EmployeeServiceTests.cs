@@ -43,7 +43,7 @@ public class EmployeeServiceTests
 
         var id = await svc.CreateAsync(new EmployeeCreateDto { NationalCode = "222", FirstName = "A", LastName = "B" }, CancellationToken.None);
 
-        await svc.UpdateAsync(new EmployeeUpdateDto { NationalCode = "222", FirstName = "Ali", LastName = "Bagheri" }, CancellationToken.None);
+        await svc.UpdateAsync(new EmployeeUpdateDto { Id = id, NationalCode = "222", FirstName = "Ali", LastName = "Bagheri" }, CancellationToken.None);
 
         var e = await svc.GetByIdAsync(id, CancellationToken.None);
         e!.FirstName.Should().Be("Ali");
