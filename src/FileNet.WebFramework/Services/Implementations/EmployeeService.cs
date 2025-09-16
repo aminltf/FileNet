@@ -1,4 +1,5 @@
 ﻿using FileNet.WebFramework.Contexts;
+using FileNet.WebFramework.Contracts.Common;
 using FileNet.WebFramework.Contracts.Employees;
 using FileNet.WebFramework.Entities;
 using FileNet.WebFramework.Services.Abstractions;
@@ -91,5 +92,46 @@ public class EmployeeService(AppDbContext db) : IEmployeeService
 
         db.Employees.Remove(entity);
         await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<PageResponse<Employee>> GetPagedAsync(
+        PageRequest page,
+        SearchRequest search,
+        SortOptions sort,
+        CancellationToken ct)
+    {
+        var dep = db.Employees
+            .AsQueryable()
+            .AsNoTracking();
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(search?.SearchTerm))
+        {
+            var term = $"%{search.SearchTerm.Trim()}%";
+            dep = dep.Where(x =>
+                EF.Functions.Like(x.NationalCode, term) ||
+                EF.Functions.Like(x.FirstName, term) ||
+                EF.Functions.Like(x.LastName, term)
+            );
+        }
+
+        // Sorting
+        dep = dep.ApplySorting(sort);
+
+        // Count
+        var totalCount = await dep.CountAsync(ct);
+
+        // Paging + Projection
+        var items = await dep
+            .ApplyPaging(page)
+            .ToListAsync(ct);
+
+        return new PageResponse<Employee>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = page.PageNumber,
+            PageSize = page.PageSize
+        };
     }
 }

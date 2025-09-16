@@ -1,4 +1,5 @@
 ﻿using FileNet.WebFramework.Contexts;
+using FileNet.WebFramework.Contracts.Common;
 using FileNet.WebFramework.Contracts.Departments;
 using FileNet.WebFramework.Contracts.Employees;
 using FileNet.WebFramework.Entities;
@@ -115,5 +116,46 @@ public class DepartmentService(AppDbContext db) : IDepartmentService
             })
             .AsNoTracking()
             .ToListAsync(ct);
+    }
+
+    public async Task<PageResponse<Department>> GetPagedAsync(
+        PageRequest page,
+        SearchRequest search,
+        SortOptions sort,
+        CancellationToken ct)
+    {
+        var dep = db.Departments
+            .AsQueryable()
+            .AsNoTracking();
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(search?.SearchTerm))
+        {
+            var term = $"%{search.SearchTerm.Trim()}%";
+            dep = dep.Where(x =>
+                EF.Functions.Like(x.Code, term) ||
+                EF.Functions.Like(x.Name, term) ||
+                EF.Functions.Like(x.Description, term)
+            );
+        }
+
+        // Sorting
+        dep = dep.ApplySorting(sort);
+
+        // Count
+        var totalCount = await dep.CountAsync(ct);
+
+        // Paging + Projection
+        var items = await dep
+            .ApplyPaging(page)
+            .ToListAsync(ct);
+
+        return new PageResponse<Department>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = page.PageNumber,
+            PageSize = page.PageSize
+        };
     }
 }
