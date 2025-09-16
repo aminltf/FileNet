@@ -1,5 +1,6 @@
 ﻿using FileNet.WebFramework.Contexts;
 using FileNet.WebFramework.Contracts.Departments;
+using FileNet.WebFramework.Contracts.Employees;
 using FileNet.WebFramework.Entities;
 using FileNet.WebFramework.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
@@ -84,5 +85,35 @@ public class DepartmentService(AppDbContext db) : IDepartmentService
 
         db.Departments.Remove(entity);
         await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<DepartmentLookupDto>> GetLookupAsync(CancellationToken ct)
+    {
+        return await db.Departments
+            .AsNoTracking()
+            .OrderBy(e => e.Name)
+            .Select(e => new DepartmentLookupDto
+            {
+                Id = e.Id,
+                Name = e.Name
+            })
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<EmployeeDto>> GetEmployeesAsync(Guid departmentId, CancellationToken ct)
+    {
+        return await db.Employees
+            .Where(e => e.DepartmentId == departmentId)
+            .OrderBy(e => e.LastName).ThenBy(e => e.FirstName)
+            .Select(e => new EmployeeDto
+            {
+                Id = e.Id,
+                NationalCode = e.NationalCode,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                DocumentCount = db.Documents.Count(d => d.EmployeeId == e.Id)
+            })
+            .AsNoTracking()
+            .ToListAsync(ct);
     }
 }

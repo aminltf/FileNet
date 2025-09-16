@@ -19,4 +19,7 @@ public class EmployeeUpdateDto
 
     [Required]
     public Gender Gender { get; set; } 
+
+    [Required]
+    public Guid DepartmentId { get; set; }
 }

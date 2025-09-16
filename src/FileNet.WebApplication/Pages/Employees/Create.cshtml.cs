@@ -4,30 +4,42 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FileNet.WebFramework.Enums;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace FileNet.WebApplication.Pages.Employees;
 
-public class CreateModel(IEmployeeService service) : PageModel
+public class CreateModel(
+    IEmployeeService employeeService,
+    IDepartmentService departmentService) : PageModel
 {
-    private readonly IEmployeeService _service = service;
+    private readonly IEmployeeService _employeeService = employeeService;
+    private readonly IDepartmentService _departmentService = departmentService;
 
     [BindProperty] public CreateEmployeeInput Input { get; set; } = new();
+    public List<SelectListItem> DepartmentOptions { get; private set; } = new();
 
     [TempData] public string? Error { get; set; }
 
-    public void OnGet() { }
+    public async Task OnGetAsync(CancellationToken ct)
+    {
+        await LoadLookupsAsync(ct);
+    }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken ct)
     {
+        await LoadLookupsAsync(ct);
+
         if (!ModelState.IsValid) return Page();
 
         try
         {
-            var id = await _service.CreateAsync(new EmployeeCreateDto
+            var id = await _employeeService.CreateAsync(new EmployeeCreateDto
             {
                 NationalCode = Input.NationalCode.Trim(),
                 FirstName = Input.FirstName.Trim(),
-                LastName = Input.LastName.Trim()
+                LastName = Input.LastName.Trim(),
+                Gender = Input.Gender,
+                DepartmentId = Input.DepartmentId
             }, ct);
 
             return RedirectToPage("Details", new { id });
@@ -37,6 +49,16 @@ public class CreateModel(IEmployeeService service) : PageModel
             Error = ex.Message;
             return Page();
         }
+    }
+
+    private async Task LoadLookupsAsync(CancellationToken ct)
+    {
+        var items = await _departmentService.GetLookupAsync(ct);
+
+        DepartmentOptions = items
+            .OrderBy(x => x.Name)
+            .Select(x => new SelectListItem { Value = x.Id.ToString(), Text = x.Name })
+            .ToList();
     }
 
     public class CreateEmployeeInput
@@ -53,6 +75,9 @@ public class CreateModel(IEmployeeService service) : PageModel
 
         [Required]
         public Gender Gender { get; set; }
+
+        [Required]
+        public Guid DepartmentId { get; set; }
     }
 
     public static IEnumerable<(byte Value, string Name)> Genders =>

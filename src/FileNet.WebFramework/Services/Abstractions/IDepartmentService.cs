@@ -1,4 +1,6 @@
-﻿using FileNet.WebFramework.Contracts.Departments;
+﻿using FileNet.WebFramework.Contracts.Common;
+using FileNet.WebFramework.Contracts.Departments;
+using FileNet.WebFramework.Contracts.Employees;
 
 namespace FileNet.WebFramework.Services.Abstractions;
 
@@ -9,4 +11,6 @@ public interface IDepartmentService
     Task<DepartmentDto?> GetByIdAsync(Guid id, CancellationToken ct);
     Task UpdateAsync(DepartmentUpdateDto dto, CancellationToken ct);
     Task DeleteAsync(Guid id, CancellationToken ct);
+    Task<IReadOnlyList<DepartmentLookupDto>> GetLookupAsync(CancellationToken ct);
+    Task<IReadOnlyList<EmployeeDto>> GetEmployeesAsync(Guid departmentId, CancellationToken ct);
 }

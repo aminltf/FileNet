@@ -1,4 +1,52 @@
 ﻿@page
 @model FileNet.WebApplication.Pages.Departments.IndexModel
 @{
+	ViewData["Title"] = "Departments";
 }
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Departments</h2>
+        <a class="btn btn-primary" asp-page="Create">+ New Department</a>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Success))
+    {
+        <div class="alert alert-success">@Model.Success</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Error))
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+
+    <table class="table table-striped table-hover align-middle text-center">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Employees</th>
+                <th style="width:1%">Operations</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model.Items)
+            {
+                <tr>
+                    <td>@d.Code</td>
+                    <td>@d.Name</td>
+                    <td>@d.Description</td>
+                    <td class="text-center">@d.EmployeeCount</td>
+                    <td class="text-nowrap">
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="Details" asp-route-id="@d.Id">Details</a>
+                        <a class="btn btn-sm btn-outline-primary" asp-page="Edit" asp-route-id="@d.Id">Edit</a>
+                        <a class="btn btn-sm btn-outline-dark" asp-page="Employees" asp-route-id="@d.Id">Employees</a>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@d.Id" class="d-inline"
+                              onsubmit="return confirm('Delete this department? All related employees will be removed.');">
+                            <button class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

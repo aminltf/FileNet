@@ -1,0 +1,58 @@
+﻿@page "{id:guid}"
+@model FileNet.WebApplication.Pages.Departments.EmployeesModel
+@{
+    ViewData["Title"] = "Department Employees";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">
+            Employees — <span class="text-secondary">@Model.Department?.Name</span>
+        </h2>
+        <a class="btn btn-outline-secondary" asp-page="Index">Back to Departments</a>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Success))
+    {
+        <div class="alert alert-success">@Model.Success</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Error))
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="alert alert-info">No employees found in this department.</div>
+    }
+    else
+    {
+        <table class="table table-striped table-hover align-middle text-center">
+            <thead>
+                <tr>
+                    <th>National Code</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Docs</th>
+                    <th style="width:1%">Operations</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var e in Model.Items)
+                {
+                    <tr>
+                        <td>@e.NationalCode</td>
+                        <td>@e.FirstName</td>
+                        <td>@e.LastName</td>
+                        <td class="text-center">@e.DocumentCount</td>
+                        <td class="text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" asp-page="/Employees/Details" asp-route-id="@e.Id">Details</a>
+                            <a class="btn btn-sm btn-outline-primary" asp-page="/Employees/Edit" asp-route-id="@e.Id">Edit</a>
+                            <a class="btn btn-sm btn-outline-dark" asp-page="/Employees/Documents" asp-route-id="@e.Id">Documents</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

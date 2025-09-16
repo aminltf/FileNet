@@ -9,5 +9,7 @@ public class EmployeeDto
     public string FirstName { get; init; } = default!;
     public string LastName { get; init; } = default!;
     public Gender Gender { get; init; }
+    public Guid DepartmentId { get; init; }
+    public string DepartmentName { get; init; } = default!;
     public int DocumentCount { get; init; }
 }

@@ -20,7 +20,8 @@ public class EmployeeService(AppDbContext db) : IEmployeeService
             NationalCode = dto.NationalCode.Trim(),
             FirstName = dto.FirstName.Trim(),
             LastName = dto.LastName.Trim(),
-            Gender = dto.Gender
+            Gender = dto.Gender,
+            DepartmentId = dto.DepartmentId
         };
 
         db.Employees.Add(entity);
@@ -54,6 +55,9 @@ public class EmployeeService(AppDbContext db) : IEmployeeService
                 NationalCode = e.NationalCode,
                 FirstName = e.FirstName,
                 LastName = e.LastName,
+                Gender = e.Gender,
+                DepartmentId = e.DepartmentId,
+                DepartmentName = e.Department.Name,
                 DocumentCount = db.Documents.Count(d => d.EmployeeId == e.Id)
             })
             .AsNoTracking()
@@ -75,6 +79,7 @@ public class EmployeeService(AppDbContext db) : IEmployeeService
         entity.FirstName = dto.FirstName.Trim();
         entity.LastName = dto.LastName.Trim();
         entity.Gender = dto.Gender;
+        entity.DepartmentId = dto.DepartmentId;
 
         await db.SaveChangesAsync(ct);
     }
