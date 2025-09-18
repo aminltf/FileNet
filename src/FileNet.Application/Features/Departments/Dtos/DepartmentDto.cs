@@ -1,6 +1,8 @@
-﻿namespace FileNet.Application.Features.Departments.Dtos;
+﻿using FileNet.Domain.Abstractions;
 
-public class DepartmentDto
+namespace FileNet.Application.Features.Departments.Dtos;
+
+public class DepartmentDto : IEntity
 {
     public Guid Id { get; init; }
     public string Code { get; init; } = null!;

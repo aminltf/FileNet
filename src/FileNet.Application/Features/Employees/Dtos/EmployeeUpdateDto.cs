@@ -1,10 +1,11 @@
 ﻿using FileNet.Application.Extensions;
+using FileNet.Domain.Abstractions;
 using FileNet.Domain.Enums;
 using FluentValidation;
 
 namespace FileNet.Application.Features.Employees.Dtos;
 
-public class EmployeeUpdateDto
+public class EmployeeUpdateDto : IEntity
 {
     public Guid Id { get; set; }
     public string NationalCode { get; set; } = default!;

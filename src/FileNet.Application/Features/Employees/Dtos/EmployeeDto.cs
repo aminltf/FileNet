@@ -1,8 +1,9 @@
-﻿using FileNet.Domain.Enums;
+﻿using FileNet.Domain.Abstractions;
+using FileNet.Domain.Enums;
 
 namespace FileNet.Application.Features.Employees.Dtos;
 
-public class EmployeeDto
+public class EmployeeDto : IEntity
 {
     public Guid Id { get; init; }
     public string NationalCode { get; init; } = default!;

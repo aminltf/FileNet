@@ -1,8 +1,9 @@
-﻿using FluentValidation;
+﻿using FileNet.Domain.Abstractions;
+using FluentValidation;
 
 namespace FileNet.Application.Features.Departments.Dtos;
 
-public class DepartmentUpdateDto
+public class DepartmentUpdateDto : IEntity
 {
     public Guid Id { get; set; }
     public string Code { get; set; } = null!;
