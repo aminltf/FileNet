@@ -7,7 +7,7 @@ public class ScanFileNameInfo
     public string OriginalFileName { get; init; } = default!;
     public string NationalCode { get; init; } = default!;
     public DocumentCategory Category { get; init; } = DocumentCategory.Other;
-    public DateTime TimestampUtc { get; init; }
-    public string? Title { get; init; }
+    public DateTime DateUtc { get; init; }
+    public int Sequence { get; init; }
     public string Extension { get; init; } = default!;
 }

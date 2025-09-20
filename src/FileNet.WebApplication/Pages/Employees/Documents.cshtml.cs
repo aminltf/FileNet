@@ -31,7 +31,7 @@ public class DocumentsModel(
         public string? Title { get; set; }
 
         [Required]
-        public DocumentCategory Category { get; set; } = DocumentCategory.Identity;
+        public DocumentCategory Category { get; set; } = DocumentCategory.Other;
 
         [Required]
         public IFormFile File { get; set; } = default!;

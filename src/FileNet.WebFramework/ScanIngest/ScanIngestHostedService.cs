@@ -1,4 +1,5 @@
-﻿using FileNet.WebFramework.Contexts;
+﻿using System.Diagnostics;
+using FileNet.WebFramework.Contexts;
 using FileNet.WebFramework.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +15,6 @@ public sealed class ScanIngestHostedService : BackgroundService
     private readonly ScanIngestOptions _opt;
     private readonly ScanFileNameParser _parser;
     private readonly IServiceScopeFactory _scopeFactory;
-    private HashSet<string> _allowed = new(StringComparer.OrdinalIgnoreCase);
 
     public ScanIngestHostedService(
         IOptions<ScanIngestOptions> opt,
@@ -26,8 +26,6 @@ public sealed class ScanIngestHostedService : BackgroundService
         _parser = parser;
         _scopeFactory = scopeFactory;
         _opt = opt.Value;
-        _allowed = _opt.AllowedExtensions?.Select(e => e.ToLowerInvariant()).ToHashSet(StringComparer.OrdinalIgnoreCase)
-                   ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -39,18 +37,17 @@ public sealed class ScanIngestHostedService : BackgroundService
         }
 
         EnsureDirectories();
-        _logger.LogInformation("ScanIngest started. Incoming: {incoming}", _opt.IncomingPath);
+        _logger.LogInformation("ScanIngest started. Watching: {Incoming}", _opt.IncomingPath);
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                await ProcessOnceAsync(stoppingToken);
+                await ProcessBatchAsync(stoppingToken);
             }
-            catch (OperationCanceledException) { /* ignore */ }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled error in scan loop.");
+                _logger.LogError(ex, "Unhandled error in ingest loop.");
             }
 
             await Task.Delay(TimeSpan.FromSeconds(Math.Max(1, _opt.PollIntervalSeconds)), stoppingToken);
@@ -65,149 +62,158 @@ public sealed class ScanIngestHostedService : BackgroundService
         Directory.CreateDirectory(_opt.ErrorPath);
     }
 
-    private async Task ProcessOnceAsync(CancellationToken ct)
+    private async Task ProcessBatchAsync(CancellationToken ct)
     {
-        var files = Directory.EnumerateFiles(_opt.IncomingPath)
-            .Where(p => _allowed.Contains(Path.GetExtension(p).ToLowerInvariant()))
-            .ToArray();
+        if (!Directory.Exists(_opt.IncomingPath)) return;
 
-        if (files.Length == 0) return;
+        var files = Directory.EnumerateFiles(_opt.IncomingPath)
+            .Where(f => _opt.AllowedExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+            .ToList();
 
         foreach (var path in files)
         {
-            if (ct.IsCancellationRequested) break;
-            await ProcessFileSafeAsync(path, ct);
+            if (ct.IsCancellationRequested) return;
+            await ProcessSingleAsync(path, ct);
         }
     }
 
-    private async Task ProcessFileSafeAsync(string path, CancellationToken ct)
+    private async Task ProcessSingleAsync(string path, CancellationToken ct)
     {
+        var sw = Stopwatch.StartNew();
+        var fileName = Path.GetFileName(path);
+
         try
         {
-            if (!await IsFileReadyAsync(path, ct))
+            if (!await WaitUntilReadyAsync(path, ct))
             {
-                _logger.LogDebug("File not ready yet: {path}", path);
+                _logger.LogWarning("File not ready: {File}", fileName);
                 return;
             }
 
-            await ProcessFileAsync(path, ct);
+            if (!_parser.TryParse(fileName, out var info, out var parseError) || info is null)
+            {
+                _logger.LogWarning("Unmatched filename: {File} - {Err}", fileName, parseError);
+                MoveSafe(path, Path.Combine(_opt.UnmatchedPath, fileName));
+                return;
+            }
+
+            var ext = info.Extension;
+            var size = new FileInfo(path).Length;
+            if (size <= 0 || size > _opt.MaxFileSizeMB * 1024L * 1024L)
+            {
+                _logger.LogWarning("Invalid size: {File}, {Size} bytes", fileName, size);
+                MoveSafe(path, Path.Combine(_opt.UnmatchedPath, fileName));
+                return;
+            }
+
+            // DB scope
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            // پیدا کردن کارمند
+            var emp = await db.Employees
+                .FirstOrDefaultAsync(e => e.NationalCode == info.NationalCode, ct);
+
+            if (emp is null)
+            {
+                _logger.LogWarning("Employee not found (NC: {NC}) for {File}", info.NationalCode, fileName);
+                MoveSafe(path, Path.Combine(_opt.UnmatchedPath, fileName));
+                return;
+            }
+
+            // خواندن محتوا
+            byte[] data;
+            await using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                using var ms = new MemoryStream();
+                await fs.CopyToAsync(ms, ct);
+                data = ms.ToArray();
+            }
+
+            var contentType = MimeHelper.FromExtension(info.Extension);
+
+            var doc = new Document
+            {
+                EmployeeId = emp.Id,
+                Title = null, // این الگو عنوان ندارد؛ در صورت نیاز بعداً تولید می‌کنیم
+                Category = info.Category,
+                FileName = fileName,
+                ContentType = contentType,
+                Size = data.LongLength,
+                Data = data,
+                UploadedOn = DateTimeOffset.UtcNow
+            };
+
+            db.Documents.Add(doc);
+            await db.SaveChangesAsync(ct);
+
+            // انتقال به Processed با جلوگیری از برخورد
+            var targetName = EnsureUniqueInProcessed(fileName, info, ext);
+            MoveSafe(path, Path.Combine(_opt.ProcessedPath, targetName));
+
+            _logger.LogInformation("Ingest OK: {File} -> DocId={DocId} in {Ms}ms", targetName, doc.Id, sw.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Processing failed for {path}", path);
-            await MoveWithReasonAsync(path, _opt.ErrorPath, "Unhandled error: " + ex.Message, ct);
+            _logger.LogError(ex, "Error ingesting file: {File}", fileName);
+            MoveSafe(path, Path.Combine(_opt.ErrorPath, fileName));
+        }
+        finally
+        {
+            sw.Stop();
         }
     }
 
-    private async Task<bool> IsFileReadyAsync(string path, CancellationToken ct)
+    private string EnsureUniqueInProcessed(string originalName, ScanFileNameInfo info, string ext)
     {
-        await Task.Delay(TimeSpan.FromSeconds(Math.Max(0, _opt.FileReadyDelaySeconds)), ct);
+        var target = Path.Combine(_opt.ProcessedPath, originalName);
+        if (!File.Exists(target)) return originalName;
 
-        try
-        {
-            using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
-            return fs.Length > 0;
-        }
-        catch (IOException)
-        {
-            return false;
-        }
+        // اگر اسم برخورد کرد، شمارنده NNN را به بعدی افزایش بده
+        var nextSeq = FileNameGenerator.GetNextSequence(_opt.ProcessedPath, info.NationalCode, info.Category, info.DateUtc, ext);
+        var newName = FileNameGenerator.Generate(info.NationalCode, info.Category, info.DateUtc, nextSeq, ext);
+        return newName;
     }
 
-    private async Task ProcessFileAsync(string path, CancellationToken ct)
+    private async Task<bool> WaitUntilReadyAsync(string path, CancellationToken ct)
     {
-        var fileName = Path.GetFileName(path);
-        var ext = Path.GetExtension(fileName).ToLowerInvariant();
-
-        if (!_parser.TryParse(fileName, out var meta, out var error))
+        // فایل باید برای چند ثانیه بدون تغییر بماند و قابل باز شدن باشد
+        var lastSize = -1L;
+        for (int i = 0; i < Math.Max(1, _opt.FileReadyDelaySeconds); i++)
         {
-            await MoveWithReasonAsync(path, _opt.UnmatchedPath, $"Pattern mismatch: {error}", ct);
-            return;
+            if (ct.IsCancellationRequested) return false;
+            try
+            {
+                var fi = new FileInfo(path);
+                if (!fi.Exists) return false;
+
+                if (fi.Length > 0 && fi.Length == lastSize)
+                {
+                    // یک بار بدون تغییر ماند؛ سعی می‌کنیم باز کنیم
+                    using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    return true;
+                }
+                lastSize = fi.Length;
+            }
+            catch
+            {
+                // در حال نوشتن است؛ کمی صبر می‌کنیم
+            }
+            await Task.Delay(1000, ct);
         }
-
-        var fi = new FileInfo(path);
-        if (fi.Length > (long)_opt.MaxFileSizeMB * 1024 * 1024)
-        {
-            await MoveWithReasonAsync(path, _opt.ErrorPath, $"File too large ({fi.Length} bytes).", ct);
-            return;
-        }
-        if (!_allowed.Contains(ext))
-        {
-            await MoveWithReasonAsync(path, _opt.UnmatchedPath, $"Extension {ext} not allowed.", ct);
-            return;
-        }
-
-        using var scope = _scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var employeeId = await db.Employees
-            .Where(e => e.NationalCode == meta!.NationalCode)
-            .Select(e => (Guid?)e.Id)
-            .FirstOrDefaultAsync(ct);
-
-        if (employeeId is null)
-        {
-            await MoveWithReasonAsync(path, _opt.UnmatchedPath, $"Employee with NC {meta.NationalCode} not found.", ct);
-            return;
-        }
-
-        var bytes = await File.ReadAllBytesAsync(path, ct);
-        var contentType = MimeHelper.FromExtension(ext);
-
-        var doc = new Document
-        {
-            EmployeeId = employeeId.Value,
-            Title = meta.Title,
-            Category = meta.Category,
-            FileName = fileName,
-            ContentType = contentType,
-            Size = bytes.LongLength,
-            Data = bytes,
-            UploadedOn = meta.TimestampUtc
-        };
-
-        db.Documents.Add(doc);
-        await db.SaveChangesAsync(ct);
-
-        var newBase = Path.GetFileNameWithoutExtension(fileName) + $"__DOC_{doc.Id:N}";
-        var dest = Path.Combine(_opt.ProcessedPath, newBase + ext);
-        await MoveFileAsync(path, dest, ct);
-
-        _logger.LogInformation("Ingested file for Employee {EmployeeId} as Document {DocumentId}", employeeId, doc.Id);
+        return false;
     }
 
-    private async Task MoveWithReasonAsync(string src, string destDir, string reason, CancellationToken ct)
+    private static void MoveSafe(string src, string dest)
     {
-        var baseName = Path.GetFileName(src);
-        var ts = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-        var destPath = Path.Combine(destDir, $"{ts}__{baseName}");
-        await MoveFileAsync(src, destPath, ct);
-
-        try
+        Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+        if (File.Exists(dest))
         {
-            await File.WriteAllTextAsync(destPath + ".txt", reason, ct);
+            var name = Path.GetFileNameWithoutExtension(dest);
+            var ext = Path.GetExtension(dest);
+            var ts = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+            dest = Path.Combine(Path.GetDirectoryName(dest)!, $"{name}__dup_{ts}{ext}");
         }
-        catch { /* best effort */ }
-
-        _logger.LogWarning("Moved {src} -> {destDir}. Reason: {reason}", baseName, destDir, reason);
-    }
-
-    private static async Task MoveFileAsync(string src, string dst, CancellationToken ct)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(dst)!);
-        if (File.Exists(dst))
-        {
-            var dir = Path.GetDirectoryName(dst)!;
-            var name = Path.GetFileNameWithoutExtension(dst);
-            var ext = Path.GetExtension(dst);
-            dst = Path.Combine(dir, $"{name}_{Guid.NewGuid():N}{ext}");
-        }
-
-        using (var srcStream = new FileStream(src, FileMode.Open, FileAccess.Read, FileShare.Read))
-        using (var dstStream = new FileStream(dst, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-        {
-            await srcStream.CopyToAsync(dstStream, ct);
-        }
-        File.Delete(src);
+        File.Move(src, dest, overwrite: false);
     }
 }
