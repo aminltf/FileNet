@@ -5,8 +5,11 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FileNet.WebFramework.Enums;
+using Microsoft.Net.Http.Headers;
+using System.Net.Mime;
 
 namespace FileNet.WebApplication.Pages.Employees;
+
 
 public class DocumentsModel(
     IEmployeeService employeeService,
@@ -74,14 +77,39 @@ public class DocumentsModel(
     {
         var dl = await _documentService.DownloadAsync(docId, ct);
         if (dl is null) return NotFound();
+        // Attachment download
         return File(dl.Data, dl.ContentType, dl.FileName);
     }
 
     public async Task<IActionResult> OnPostDeleteAsync(Guid docId, CancellationToken ct)
     {
-        await _documentService.DeleteAsync(docId, ct);
-        Success = "Document deleted.";
+        try
+        {
+            await _documentService.DeleteAsync(docId, ct);
+            Success = "Document deleted.";
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
         return RedirectToPage(new { id = EmployeeId });
+    }
+
+    // Inline preview
+    public async Task<IActionResult> OnGetPreviewAsync(Guid docId, CancellationToken ct)
+    {
+        var dl = await _documentService.DownloadAsync(docId, ct);
+        if (dl is null) return NotFound();
+
+        // Force inline preview when browser supports it (images, pdf, text, …)
+        Response.Headers[HeaderNames.ContentDisposition] =
+            new ContentDisposition
+            {
+                Inline = true,
+                FileName = dl.FileName
+            }.ToString();
+
+        return File(dl.Data, dl.ContentType);
     }
 
     private async Task<PageResult> ReloadAndReturnAsync(CancellationToken ct)

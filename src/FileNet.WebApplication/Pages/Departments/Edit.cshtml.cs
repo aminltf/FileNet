@@ -10,7 +10,8 @@ public class EditModel(IDepartmentService service) : PageModel
 {
     private readonly IDepartmentService _service = service;
 
-    [FromRoute] public Guid Id { get; set; }
+    [BindProperty(SupportsGet = true)]
+    public Guid Id { get; set; }
 
     [BindProperty] public EditDepartmentInput Input { get; set; } = new();
 
@@ -19,14 +20,14 @@ public class EditModel(IDepartmentService service) : PageModel
 
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
     {
-        var e = await _service.GetByIdAsync(Id, ct);
-        if (e is null) return NotFound();
+        var d = await _service.GetByIdAsync(Id, ct);
+        if (d is null) return NotFound();
 
         Input = new EditDepartmentInput
         {
-            Code = e.Code,
-            Name = e.Name,
-            Description = e.Description
+            Code = d.Code,
+            Name = d.Name,
+            Description = d.Description
         };
         return Page();
     }
@@ -39,6 +40,7 @@ public class EditModel(IDepartmentService service) : PageModel
         {
             await _service.UpdateAsync(new DepartmentUpdateDto
             {
+                Id = Id,
                 Code = Input.Code.Trim(),
                 Name = Input.Name.Trim(),
                 Description = Input.Description?.Trim()
