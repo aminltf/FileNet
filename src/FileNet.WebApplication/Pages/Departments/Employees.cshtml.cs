@@ -1,4 +1,5 @@
-﻿using FileNet.WebFramework.Contracts.Departments;
+﻿using FileNet.WebFramework.Contracts.Common;
+using FileNet.WebFramework.Contracts.Departments;
 using FileNet.WebFramework.Contracts.Employees;
 using FileNet.WebFramework.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
@@ -9,31 +10,48 @@ namespace FileNet.WebApplication.Pages.Departments;
 public class EmployeesModel : PageModel
 {
     private readonly IDepartmentService _deps;
-    private readonly IEmployeeService _emps;
+    public EmployeesModel(IDepartmentService deps) => _deps = deps;
 
-    public EmployeesModel(IDepartmentService deps, IEmployeeService emps)
-    {
-        _deps = deps;
-        _emps = emps;
-    }
-
-    [FromRoute(Name = "id")]
-    public Guid DepartmentId { get; set; }
+    [FromRoute(Name = "id")] public Guid DepartmentId { get; set; }
 
     [TempData] public string? Success { get; set; }
     [TempData] public string? Error { get; set; }
 
+    [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
+    [BindProperty(SupportsGet = true)] public int PageSize { get; set; } = 10;
+    [BindProperty(SupportsGet = true)] public string? SearchTerm { get; set; }
+    [BindProperty(SupportsGet = true)] public string? SortColumn { get; set; }
+    [BindProperty(SupportsGet = true)] public SortDirection SortDirection { get; set; } = SortDirection.Asc;
+
+    public PageResponse<EmployeeDto>? Page { get; private set; }
+    public IReadOnlyList<EmployeeDto> Items => Page?.Items;
     public DepartmentDto? Department { get; private set; }
-    public IReadOnlyList<EmployeeDto> Items { get; private set; } = Array.Empty<EmployeeDto>();
 
     public async Task<IActionResult> OnGetAsync(CancellationToken ct)
     {
-        if (DepartmentId == Guid.Empty) return NotFound();
+        // normalize
+        if (PageNumber <= 0) PageNumber = 1;
+        if (PageSize <= 0) PageSize = 10;
+
+        var request = new PagedRequest
+        {
+            PageNumber = PageNumber,
+            PageSize = PageSize,
+            SearchTerm = SearchTerm,
+            SortColumn = SortColumn,
+            SortDirection = SortDirection
+        };
 
         Department = await _deps.GetByIdAsync(DepartmentId, ct);
-        if (Department is null) return NotFound();
 
-        Items = await _deps.GetEmployeesAsync(DepartmentId, ct);
+        Page = await _deps.GetEmployeesPagedAsync(DepartmentId, request, ct);
+
+        if (Page is not null)
+        {
+            PageNumber = Page.PageNumber;
+            PageSize = Page.PageSize;
+        }
+
         return Page();
     }
 }

@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using FileNet.WebFramework.Contexts;
+﻿using FileNet.WebFramework.Contexts;
 using FileNet.WebFramework.Contracts.Common;
 using FileNet.WebFramework.Contracts.Departments;
 using FileNet.WebFramework.Contracts.Employees;
@@ -119,34 +118,90 @@ public class DepartmentService(AppDbContext db) : IDepartmentService
             .ToListAsync(ct);
     }
 
-    public async Task<PageResponse<Department>> GetPagedAsync(
+    public async Task<PageResponse<EmployeeDto>> GetEmployeesPagedAsync(
+        Guid departmentId,
         PagedRequest request,
         CancellationToken ct)
     {
-        var dep = db.Departments
-            .AsQueryable()
-            .AsNoTracking();
+        IQueryable<EmployeeDto> query = db.Employees
+            .AsNoTracking()
+            .Where(d => d.DepartmentId == departmentId)
+            .OrderBy(e => e.LastName).ThenBy(e => e.FirstName)
+            .Select(d => new EmployeeDto
+            {
+                Id = d.Id,
+                NationalCode = d.NationalCode,
+                FirstName = d.FirstName,
+                LastName = d.LastName,
+                DocumentCount = d.Documents.Count()
+            });
 
-        // Search
-        dep = dep.ApplySearching(request);
-
-        // Sorting
-        dep = dep.ApplySorting(request);
+        // Filter/Search
+        query = query.ApplySearching(request);
 
         // Count
-        var totalCount = await dep.CountAsync(ct);
+        var totalCount = await query.CountAsync(ct);
+
+        // Sorting
+        if (string.IsNullOrWhiteSpace(request.SortColumn))
+            query = query.OrderBy(x => x.LastName).ThenBy(x => x.FirstName);
+        else
+            query = query.ApplySorting(request);
 
         // Paging
-        var items = await dep
-            .ApplyPaging(request)
-            .ToListAsync(ct);
+        var items = await query.ApplyPaging(request).ToListAsync(ct);
 
-        return new PageResponse<Department>
+        int pageNumber = request.PageNumber > 0 ? request.PageNumber : 1;
+        int pageSize = request.PageSize > 0 ? Math.Min(request.PageSize, 10000) : 10;
+
+        return new PageResponse<EmployeeDto>
         {
             Items = items,
             TotalCount = totalCount,
-            PageNumber = request.PageNumber,
-            PageSize = request.PageSize
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
+    public async Task<PageResponse<DepartmentDto>> GetPagedAsync(
+        PagedRequest request,
+        CancellationToken ct)
+    {
+        IQueryable<DepartmentDto> query = db.Departments
+            .AsNoTracking()
+            .Select(d => new DepartmentDto
+            {
+                Id = d.Id,
+                Code = d.Code,
+                Name = d.Name,
+                Description = d.Description,
+                EmployeeCount = d.Employees.Count
+            });
+
+        // Filter/Search
+        query = query.ApplySearching(request);
+
+        // Count
+        var totalCount = await query.CountAsync(ct);
+
+        // Sorting
+        if (string.IsNullOrWhiteSpace(request.SortColumn))
+            query = query.OrderBy(x => x.Code).ThenBy(x => x.Name);
+        else
+            query = query.ApplySorting(request);
+
+        // Paging
+        var items = await query.ApplyPaging(request).ToListAsync(ct);
+
+        int pageNumber = request.PageNumber > 0 ? request.PageNumber : 1;
+        int pageSize = request.PageSize > 0 ? Math.Min(request.PageSize, 10000) : 10;
+
+        return new PageResponse<DepartmentDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
         };
     }
 }

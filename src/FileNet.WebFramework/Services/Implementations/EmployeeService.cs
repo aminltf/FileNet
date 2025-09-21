@@ -4,7 +4,6 @@ using FileNet.WebFramework.Contracts.Employees;
 using FileNet.WebFramework.Entities;
 using FileNet.WebFramework.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FileNet.WebFramework.Services.Implementations;
 

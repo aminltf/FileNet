@@ -1,3 +1,4 @@
+using FileNet.WebFramework.Contracts.Common;
 using FileNet.WebFramework.Contracts.Departments;
 using FileNet.WebFramework.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
@@ -5,17 +6,47 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FileNet.WebApplication.Pages.Departments;
 
-public class IndexModel(IDepartmentService departmentService) : PageModel
+public class IndexModel(IDepartmentService svc) : PageModel
 {
-    private readonly IDepartmentService _svc = departmentService;
-    public IReadOnlyList<DepartmentDto> Items { get; private set; } = [];
+    private readonly IDepartmentService _svc = svc;
+
+    [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
+    [BindProperty(SupportsGet = true)] public int PageSize { get; set; } = 10;
+    [BindProperty(SupportsGet = true)] public string? SearchTerm { get; set; }
+    [BindProperty(SupportsGet = true)] public string? SortColumn { get; set; }
+    [BindProperty(SupportsGet = true)] public SortDirection SortDirection { get; set; } = SortDirection.Asc;
+
+    public PageResponse<DepartmentDto>? Page { get; private set; }
+    public IReadOnlyList<DepartmentDto> Items => Page?.Items;
 
     [TempData] public string? Success { get; set; }
     [TempData] public string? Error { get; set; }
 
-    public async Task OnGetAsync(CancellationToken ct)
+    public async Task<IActionResult> OnGetAsync(CancellationToken ct)
     {
-        Items = await _svc.GetAllAsync(ct);
+        // normalize fallbacks
+        if (PageNumber <= 0) PageNumber = 1;
+        if (PageSize <= 0) PageSize = 10;
+
+        var request = new PagedRequest
+        {
+            PageNumber = PageNumber,
+            PageSize = PageSize,
+            SearchTerm = SearchTerm,
+            SortColumn = SortColumn,
+            SortDirection = SortDirection
+        };
+
+        Page = await _svc.GetPagedAsync(request, ct);
+
+        // sync back normalized values (service might clamp them)
+        if (Page is not null)
+        {
+            PageNumber = Page.PageNumber;
+            PageSize = Page.PageSize;
+        }
+
+        return Page();
     }
 
     public async Task<IActionResult> OnPostDeleteAsync(Guid id, CancellationToken ct)
@@ -29,6 +60,13 @@ public class IndexModel(IDepartmentService departmentService) : PageModel
         {
             Error = ex.Message;
         }
-        return RedirectToPage();
+        return RedirectToPage(new
+        {
+            PageNumber,
+            PageSize,
+            SearchTerm,
+            SortColumn,
+            SortDirection
+        });
     }
 }
