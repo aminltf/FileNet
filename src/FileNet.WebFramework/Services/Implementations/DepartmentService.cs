@@ -1,4 +1,5 @@
-﻿using FileNet.WebFramework.Contexts;
+﻿using Azure.Core;
+using FileNet.WebFramework.Contexts;
 using FileNet.WebFramework.Contracts.Common;
 using FileNet.WebFramework.Contracts.Departments;
 using FileNet.WebFramework.Contracts.Employees;
@@ -119,9 +120,7 @@ public class DepartmentService(AppDbContext db) : IDepartmentService
     }
 
     public async Task<PageResponse<Department>> GetPagedAsync(
-        PageRequest page,
-        SearchRequest search,
-        SortOptions sort,
+        PagedRequest request,
         CancellationToken ct)
     {
         var dep = db.Departments
@@ -129,33 +128,25 @@ public class DepartmentService(AppDbContext db) : IDepartmentService
             .AsNoTracking();
 
         // Search
-        if (!string.IsNullOrWhiteSpace(search?.SearchTerm))
-        {
-            var term = $"%{search.SearchTerm.Trim()}%";
-            dep = dep.Where(x =>
-                EF.Functions.Like(x.Code, term) ||
-                EF.Functions.Like(x.Name, term) ||
-                EF.Functions.Like(x.Description, term)
-            );
-        }
+        dep = dep.ApplySearching(request);
 
         // Sorting
-        dep = dep.ApplySorting(sort);
+        dep = dep.ApplySorting(request);
 
         // Count
         var totalCount = await dep.CountAsync(ct);
 
-        // Paging + Projection
+        // Paging
         var items = await dep
-            .ApplyPaging(page)
+            .ApplyPaging(request)
             .ToListAsync(ct);
 
         return new PageResponse<Department>
         {
             Items = items,
             TotalCount = totalCount,
-            PageNumber = page.PageNumber,
-            PageSize = page.PageSize
+            PageNumber = request.PageNumber,
+            PageSize = request.PageSize
         };
     }
 }

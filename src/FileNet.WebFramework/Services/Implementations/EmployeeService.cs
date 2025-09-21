@@ -4,6 +4,7 @@ using FileNet.WebFramework.Contracts.Employees;
 using FileNet.WebFramework.Entities;
 using FileNet.WebFramework.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FileNet.WebFramework.Services.Implementations;
 
@@ -94,44 +95,48 @@ public class EmployeeService(AppDbContext db) : IEmployeeService
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task<PageResponse<Employee>> GetPagedAsync(
-        PageRequest page,
-        SearchRequest search,
-        SortOptions sort,
+    public async Task<PageResponse<EmployeeDto>> GetPagedAsync(
+        PagedRequest request,
         CancellationToken ct)
     {
-        var dep = db.Employees
-            .AsQueryable()
-            .AsNoTracking();
+        IQueryable<EmployeeDto> query = db.Employees
+            .AsNoTracking()
+            .Select(e => new EmployeeDto
+            {
+                Id = e.Id,
+                NationalCode = e.NationalCode,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                Gender = e.Gender,
+                DepartmentId = e.DepartmentId,
+                DepartmentName = e.Department!.Name,
+                DocumentCount = e.Documents.Count
+            });
 
-        // Search
-        if (!string.IsNullOrWhiteSpace(search?.SearchTerm))
-        {
-            var term = $"%{search.SearchTerm.Trim()}%";
-            dep = dep.Where(x =>
-                EF.Functions.Like(x.NationalCode, term) ||
-                EF.Functions.Like(x.FirstName, term) ||
-                EF.Functions.Like(x.LastName, term)
-            );
-        }
-
-        // Sorting
-        dep = dep.ApplySorting(sort);
+        // Filter/Search
+        query = query.ApplySearching(request);
 
         // Count
-        var totalCount = await dep.CountAsync(ct);
+        var totalCount = await query.CountAsync(ct);
 
-        // Paging + Projection
-        var items = await dep
-            .ApplyPaging(page)
-            .ToListAsync(ct);
+        // Sorting
+        if (string.IsNullOrWhiteSpace(request.SortColumn))
+            query = query.OrderBy(x => x.LastName).ThenBy(x => x.FirstName);
+        else
+            query = query.ApplySorting(request);
 
-        return new PageResponse<Employee>
+        // Paging
+        var items = await query.ApplyPaging(request).ToListAsync(ct);
+
+        int pageNumber = request.PageNumber > 0 ? request.PageNumber : 1;
+        int pageSize = request.PageSize > 0 ? Math.Min(request.PageSize, 10000) : 10;
+
+        return new PageResponse<EmployeeDto>
         {
             Items = items,
             TotalCount = totalCount,
-            PageNumber = page.PageNumber,
-            PageSize = page.PageSize
+            PageNumber = pageNumber,
+            PageSize = pageSize
         };
     }
 }

@@ -14,9 +14,5 @@ public interface IDepartmentService
     Task DeleteAsync(Guid id, CancellationToken ct);
     Task<IReadOnlyList<DepartmentLookupDto>> GetLookupAsync(CancellationToken ct);
     Task<IReadOnlyList<EmployeeDto>> GetEmployeesAsync(Guid departmentId, CancellationToken ct);
-    Task<PageResponse<Department>> GetPagedAsync(
-        PageRequest page,
-        SearchRequest search,
-        SortOptions sort,
-        CancellationToken ct);
+    Task<PageResponse<Department>> GetPagedAsync(PagedRequest request, CancellationToken ct);
 }
