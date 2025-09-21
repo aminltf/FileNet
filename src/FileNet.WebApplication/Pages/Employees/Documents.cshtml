@@ -99,24 +99,36 @@
                                 <td>@d.ContentType</td>
                                 <td>@d.UploadedOn.LocalDateTime</td>
                                 <td class="text-nowrap">
-                                    <a class="btn btn-sm btn-outline-primary"
+                                    <!-- Download -->
+                                    <a class="btn btn-sm btn-outline-primary btn-icon"
                                        asp-page-handler="Download"
                                        asp-route-id="@Model.EmployeeId"
-                                       asp-route-docId="@d.Id">Download</a>
+                                       asp-route-docId="@d.Id"
+                                       aria-label="Download" data-bs-toggle="tooltip" title="Download">
+                                        <i class="bi bi-download"></i>
+                                    </a>
 
+                                    <!-- Delete -->
                                     <form method="post" asp-page-handler="Delete"
                                           asp-route-id="@Model.EmployeeId"
-                                          asp-route-docId="@d.Id" class="d-inline"
+                                          asp-route-docId="@d.Id"
+                                          class="d-inline"
                                           onsubmit="return confirm('Delete this document?');">
-                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                        <button class="btn btn-sm btn-outline-danger btn-icon"
+                                                type="submit"
+                                                aria-label="Delete" data-bs-toggle="tooltip" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </form>
 
+                                    <!-- Preview -->
                                     <button type="button"
-                                            class="btn btn-sm btn-outline-info btn-preview"
+                                            class="btn btn-sm btn-outline-info btn-icon btn-preview"
                                             data-docid="@d.Id"
                                             data-name="@d.FileName"
-                                            data-type="@d.ContentType">
-                                        Preview
+                                            data-type="@d.ContentType"
+                                            aria-label="Preview" data-bs-toggle="tooltip" title="Preview">
+                                        <i class="bi bi-eye"></i>
                                     </button>
                                 </td>
                             </tr>
@@ -208,5 +220,15 @@
             frameEl.removeAttribute('src');
           });
         })();
+    </script>
+    <script>
+        function initTooltips() {
+          document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+            const t = bootstrap.Tooltip.getInstance(el);
+            if (t) t.dispose();
+            new bootstrap.Tooltip(el);
+          });
+        }
+        initTooltips();
     </script>
 }
