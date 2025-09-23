@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FileNet.WebFramework;
@@ -52,6 +53,12 @@ public static class DependencyInjection
             options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
             options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
         });
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy("Deps.Manage", p => p.RequireRole(AppRoles.Admin, AppRoles.Manager))
+            .AddPolicy("Employees.Manage", p => p.RequireRole(AppRoles.Admin, AppRoles.Manager));
+            //.AddPolicy("Docs.Read",    p => p.RequireRole(AppRoles.Admin, AppRoles.Manager, AppRoles.User))
+            //.AddPolicy("Docs.Manage",  p => p.RequireRole(AppRoles.Admin, AppRoles.Manager));
 
         authBuilder.AddIdentityCookies();
 

@@ -1,11 +1,13 @@
 using FileNet.WebFramework.Contracts.Common;
 using FileNet.WebFramework.Contracts.Departments;
 using FileNet.WebFramework.Services.Abstractions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FileNet.WebApplication.Pages.Departments;
 
+[Authorize(Policy = "Deps.Manage")]
 public class IndexModel(IDepartmentService svc) : PageModel
 {
     private readonly IDepartmentService _svc = svc;

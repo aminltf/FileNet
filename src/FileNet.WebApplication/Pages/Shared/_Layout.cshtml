@@ -1,79 +1,129 @@
-﻿<!DOCTYPE html>
+﻿@using System.IdentityModel.Tokens.Jwt
+@inject Microsoft.Extensions.Options.IOptions<FileNet.WebFramework.Contracts.Common.JwtOptions> JwtOpt
+
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - FileNet.WebApplication</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - FileNet.WebApplication</title>
 
-    <!-- Preload local fonts -->
-    <link rel="preload" href="~/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="~/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="preload" href="~/fonts/Vazirmatn[wght].woff2" as="font" type="font/woff2" crossorigin>
+	<!-- Preload local fonts -->
+	<link rel="preload" href="~/fonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="preload" href="~/fonts/Vazirmatn-Bold.woff2" as="font" type="font/woff2" crossorigin>
+	<link rel="preload" href="~/fonts/Vazirmatn[wght].woff2" as="font" type="font/woff2" crossorigin>
 
-    <!-- Bootstrap RTL -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.css" />
+	<!-- Bootstrap RTL -->
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.css" />
 
-    <!-- Site styles -->
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/FileNet.WebApplication.styles.css" asp-append-version="true" />
+	<!-- Site styles -->
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/FileNet.WebApplication.styles.css" asp-append-version="true" />
 
-    <!-- Icons -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+	<!-- Icons -->
+	<link rel="stylesheet"
+		  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 <body class="fa-digits">
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">فایل‌نت</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="بازکردن منو">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">صفحهٔ اصلی</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Employees/Index">کارمندان</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Departments/Index">دپارتمان‌ها</a>
-                        </li>
-                    </ul>
-                </div>
-                @if (User?.Identity?.IsAuthenticated ?? false)
-                {
-                    <div class="ms-auto small text-muted">
-                        <span class="me-2">کاربر: @User.Identity!.Name</span>
-                        @* <span>IP: @(Context.Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',')[0] ?? Context.Connection.RemoteIpAddress?.ToString())</span> *@
+	<header>
+		<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+			<div class="container">
+				<a class="navbar-brand" asp-area="" asp-page="/Index">فایل‌نت</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+						aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="بازکردن منو">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+					<ul class="navbar-nav flex-grow-1">
+						<li class="nav-item">
+							<a class="nav-link text-dark" asp-area="" asp-page="/Index">صفحهٔ اصلی</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link text-dark" asp-area="" asp-page="/Employees/Index">کارمندان</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link text-dark" asp-area="" asp-page="/Departments/Index">دپارتمان‌ها</a>
+						</li>
+					</ul>
+				</div>
+				@if (User?.Identity?.IsAuthenticated ?? false)
+				{
+					<a class="btn btn-sm btn-secondary btn-icon"
+					   asp-page="/Account/Profile"
+					   aria-label="Profile" data-bs-toggle="tooltip" title="پروفایل">
+						<i class="bi bi-person-fill"></i>
+					</a>
+				}
+				@if (User?.Identity?.IsAuthenticated ?? false)
+				{
+					<div class="ms-auto small text-muted">
+						@* <span class="me-2">کاربر: @User.Identity!.Name</span> *@
+						@* <span>IP: @(Context.Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',')[0] ?? Context.Connection.RemoteIpAddress?.ToString())</span> *@
 
-                        <form class="d-inline ms-3" method="post" asp-page="/Account/Logout">
-                            <button class="btn btn-sm btn-outline-danger">خروج</button>
-                        </form>
-                    </div>
-                }
-            </div>
-        </nav>
-    </header>
+						<form class="d-inline ms-3" method="post" asp-page="/Account/Logout"
+							  onsubmit="return confirm('Are sure logout?');">
+							<button type="submit"
+									class="btn btn-sm btn-danger"
+									aria-label="Logout" data-bs-toggle="tooltip" title="خروج">
+								<i class="bi bi-box-arrow-left"></i>
+							</button>
+						</form>
+					</div>
+				}
+			</div>
+		</nav>
+	</header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+	<div class="container">
+		<main role="main" class="pb-3">
+			@RenderBody()
+		</main>
+	</div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - FileNet.WebApplication - <a asp-area="" asp-page="/Privacy">حریم خصوصی</a>
-        </div>
-    </footer>
+	@{
+		DateTime? accessExp = null;
+		var jwt = JwtOpt.Value;
+		if (Context.Request.Cookies.TryGetValue(jwt.Cookies.Access, out var at))
+		{
+			try
+			{
+				var handler = new JwtSecurityTokenHandler();
+				var token = handler.ReadJwtToken(at);
+				var expClaim = token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value
+				?? token.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+				if (long.TryParse(expClaim, out var expUnix))
+					accessExp = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
+			}
+			catch { }
+		}
+	}
+	@if (accessExp.HasValue)
+	{
+		<script>
+			(function () {
+				try {
+					var expUtc = Date.parse('@accessExp.Value.ToUniversalTime().ToString("o")'); // ms
+					var msBefore = expUtc - Date.now() - 60000; // 1 دقیقه قبل از انقضاء
+					if (msBefore < 0) msBefore = 0;
+					setTimeout(function () {
+						fetch('/Account/Refresh', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+							.catch(function () { /* ignore */ });
+					}, msBefore);
+				} catch(e){/* ignore */}
+			})();
+		</script>
+	}
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+	<footer class="border-top footer text-muted">
+		<div class="container">
+			&copy; 2025 - FileNet.WebApplication - <a asp-area="" asp-page="/Privacy">حریم خصوصی</a>
+		</div>
+	</footer>
 
-    @await RenderSectionAsync("Scripts", required: false)
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+
+	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

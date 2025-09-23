@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace FileNet.WebApplication.Pages.Account;
 
+[IgnoreAntiforgeryToken]
 public class RefreshModel(ITokenService tokens, IOptions<JwtOptions> jwtOpt) : PageModel
 {
     private readonly JwtOptions _jwt = jwtOpt.Value;

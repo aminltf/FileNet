@@ -10,6 +10,7 @@ public class IdentityContext : IdentityDbContext<ApplicationUser, IdentityRole<G
     public IdentityContext(DbContextOptions<IdentityContext> options) : base(options) { }
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<LoginLog> LoginLogs => Set<LoginLog>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -35,6 +36,16 @@ public class IdentityContext : IdentityDbContext<ApplicationUser, IdentityRole<G
             cfg.Property(x => x.Token).IsRequired().HasMaxLength(400);
             cfg.Property(x => x.CreatedByIp).HasMaxLength(64);
             cfg.HasIndex(x => x.Token).IsUnique();
+        });
+
+        b.Entity<LoginLog>(cfg =>
+        {
+            cfg.ToTable("LoginLogs");
+            cfg.HasKey(x => x.Id);
+            cfg.Property(x => x.Ip).HasMaxLength(64);
+            cfg.Property(x => x.UserAgent).HasMaxLength(512);
+            cfg.HasIndex(x => x.UserId);
+            cfg.HasIndex(x => x.AtUtc);
         });
     }
 }

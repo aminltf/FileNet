@@ -1,0 +1,67 @@
+﻿@page
+@model FileNet.WebApplication.Pages.Account.ProfileModel
+@{
+    ViewData["Title"] = "پروفایل کاربر";
+}
+
+<div class="container mt-4" style="max-width:900px">
+    <h3 class="mb-3">پروفایل کاربر</h3>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4"><strong>نام کاربری:</strong> @Model.UserName</div>
+                <div class="col-md-4"><strong>نمایش‌نام:</strong> @Model.DisplayName</div>
+                <div class="col-md-4"><strong>ایمیل:</strong> @Model.Email</div>
+                <div class="col-md-4"><strong>نقش‌ها:</strong> @Model.Roles</div>
+                <div class="col-md-4"><strong>IP فعلی:</strong> @Model.ClientIp</div>
+                <div class="col-md-4">
+                    <strong>انقضای توکن:</strong>
+                    @if (Model.AccessTokenExpiresUtc.HasValue)
+                    {
+                        <span title="@Model.AccessTokenExpiresUtc.Value.ToString("u")">
+                            @Model.AccessTokenExpiresUtc.Value.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+                        </span>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="mb-2">آخرین ورودها</h5>
+    <div class="table-responsive">
+        <table class="table table-sm table-striped text-center">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>زمان (UTC)</th>
+                    <th>IP</th>
+                    <th>User-Agent</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.LoginLogs.Count == 0)
+                {
+                    <tr><td colspan="4" class="text-muted">موردی ثبت نشده است.</td></tr>
+                }
+                else
+                {
+                    var i = 0;
+                    foreach (var l in Model.LoginLogs)
+                    {
+                        <tr>
+                            <td>@(++i)</td>
+                            <td>@l.AtUtc.ToString("u")</td>
+                            <td>@l.Ip</td>
+                            <td class="text-truncate" style="max-width:480px">@l.UserAgent</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
