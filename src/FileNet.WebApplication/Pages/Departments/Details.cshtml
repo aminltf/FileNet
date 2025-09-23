@@ -5,11 +5,11 @@
 }
 <div class="container mt-4" style="max-width:720px">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Department Details</h2>
+        <h2 class="mb-0">جزئیات دپارتمان</h2>
         <div class="d-flex gap-2">
-            <a class="btn btn-outline-primary" asp-page="Edit" asp-route-id="@Model.Id">Edit</a>
-            <a class="btn btn-outline-dark" asp-page="Employees" asp-route-id="@Model.Id">Employees</a>
-            <a class="btn btn-outline-secondary" asp-page="Index">Back</a>
+            <a class="btn btn-outline-primary" asp-page="Edit" asp-route-id="@Model.Id">ویرایش</a>
+            <a class="btn btn-outline-dark" asp-page="Employees" asp-route-id="@Model.Id">کارمندان</a>
+            <a class="btn btn-outline-secondary" asp-page="Index">بازگشت</a>
         </div>
     </div>
 
@@ -17,15 +17,15 @@
     {
         <dl class="row">
             <dt class="col-sm-4">Code</dt>
-            <dd class="col-sm-8">@Model.Item.Code</dd>
-
-            <dt class="col-sm-4">Name</dt>
             <dd class="col-sm-8">@Model.Item.Name</dd>
 
-            <dt class="col-sm-4">Description</dt>
+            <dt class="col-sm-4">نام</dt>
+            <dd class="col-sm-8">@Model.Item.Name</dd>
+
+            <dt class="col-sm-4">توضیحات</dt>
             <dd class="col-sm-8">@Model.Item.Description</dd>
 
-            <dt class="col-sm-4">Employees</dt>
+            <dt class="col-sm-4">تعداد کارمندان</dt>
             <dd class="col-sm-8">@Model.Item.EmployeeCount</dd>
         </dl>
     }

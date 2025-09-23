@@ -1,4 +1,4 @@
-using FileNet.WebFramework.Contracts.Documents;
+﻿using FileNet.WebFramework.Contracts.Documents;
 using FileNet.WebFramework.Contracts.Employees;
 using FileNet.WebFramework.Services.Abstractions;
 using System.ComponentModel.DataAnnotations;
@@ -101,7 +101,7 @@ public class DocumentsModel(
         var dl = await _documentService.DownloadAsync(docId, ct);
         if (dl is null) return NotFound();
 
-        // Force inline preview when browser supports it (images, pdf, text, �)
+        // Force inline preview when browser supports it (images, pdf, text, …)
         Response.Headers[HeaderNames.ContentDisposition] =
             new ContentDisposition
             {

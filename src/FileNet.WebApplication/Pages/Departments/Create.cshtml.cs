@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using FileNet.WebFramework.Contracts.Departments;
 using FileNet.WebFramework.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +31,7 @@ public class CreateModel(IDepartmentService service) : PageModel
 
             return RedirectToPage("Details", new { id });
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Error = ex.Message;
             return Page();
@@ -41,12 +41,15 @@ public class CreateModel(IDepartmentService service) : PageModel
     public class CreateDepartmentInput
     {
         [Required]
+        [Display(Name = "کد")]
         public string Code { get; set; } = default!;
 
         [Required]
+        [Display(Name = "نام")]
         public string Name { get; set; } = default!;
 
         [StringLength(100)]
+        [Display(Name = "توضیحات")]
         public string? Description { get; set; }
     }
 }

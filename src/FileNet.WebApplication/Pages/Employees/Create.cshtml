@@ -4,7 +4,7 @@
     ViewData["Title"] = "New Employee";
 }
 <div class="container mt-4" style="max-width:720px">
-    <h2 class="mb-3">New Employee</h2>
+    <h2 class="mb-3">ایجاد کارمند</h2>
 
     @if (!string.IsNullOrWhiteSpace(Model.Error))
     {
@@ -28,7 +28,7 @@
             <span class="text-danger" asp-validation-for="Input.LastName"></span>
         </div>
         <div class="mb-3">
-            <label asp-for="Input.Gender" class="form-label">Gender</label>
+            <label asp-for="Input.Gender" class="form-label">جنسیت</label>
             <select asp-for="Input.Gender" class="form-select">
                 @foreach (var c in FileNet.WebApplication.Pages.Employees.CreateModel.Genders)
                 {
@@ -38,15 +38,15 @@
             <span asp-validation-for="Input.Gender" class="text-danger"></span>
         </div>
         <div class="mb-4">
-            <label asp-for="Input.DepartmentId" class="form-label">Department</label>
+            <label asp-for="Input.DepartmentId" class="form-label">دپارتمان</label>
             <select asp-for="Input.DepartmentId" class="form-select" asp-items="Model.DepartmentOptions">
-                <option value="" selected disabled>Select Department</option>
+                <option value="" selected disabled>انتخاب دپارتمان</option>
             </select>
             <span asp-validation-for="Input.DepartmentId" class="text-danger"></span>
         </div>
         <div class="d-flex gap-2 mt-3">
-            <button type="submit" class="btn btn-primary">Create</button>
-            <a asp-page="Index" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">ایجاد</button>
+            <a asp-page="Index" class="btn btn-outline-secondary">انصراف</a>
         </div>
     </form>
 </div>

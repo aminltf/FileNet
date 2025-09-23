@@ -1,4 +1,4 @@
-using FileNet.WebFramework.Contracts.Employees;
+﻿using FileNet.WebFramework.Contracts.Employees;
 using FileNet.WebFramework.Services.Abstractions;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
@@ -64,13 +64,15 @@ public class CreateModel(
     public class CreateEmployeeInput
     {
         [Required, StringLength(10)]
-        [Display(Name = "National Code")]
+        [Display(Name = "کدملی")]
         public string NationalCode { get; set; } = default!;
 
         [Required, StringLength(100)]
+        [Display(Name = "نام")]
         public string FirstName { get; set; } = default!;
 
         [Required, StringLength(100)]
+        [Display(Name = "نام‌خانوادگی")]
         public string LastName { get; set; } = default!;
 
         [Required]

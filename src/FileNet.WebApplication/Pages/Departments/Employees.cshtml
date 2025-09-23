@@ -8,9 +8,9 @@
 <div class="container mt-4" id="dept-emps">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h2 class="mb-0">
-            Employees — <span class="text-secondary">@Model.Department?.Name</span>
+            کارمندان — <span class="text-secondary">@Model.Department?.Name</span>
         </h2>
-        <a class="btn btn-outline-secondary" asp-page="Index">Back to Departments</a>
+        <a class="btn btn-outline-secondary" asp-page="Index">بازگشت به دپارتمان‌ها</a>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(Model.Success))
@@ -24,11 +24,11 @@
 
     <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-3">
         <div class="input-group" style="max-width:580px;">
-            <input id="search" class="form-control" placeholder="Search..." value="@Model.SearchTerm" />
-            <button id="btnSearch" class="btn btn-outline-primary" type="button">Search</button>
+            <input id="search" class="form-control" placeholder="جستجو..." value="@Model.SearchTerm" />
+            <button id="btnSearch" class="btn btn-outline-primary" type="button">جستجو</button>
         </div>
         <div class="d-flex align-items-center gap-2 ms-auto">
-            <label for="pageSize" class="col-form-label">Page size</label>
+            <label for="pageSize" class="col-form-label">اندازه صفحه</label>
             <select id="pageSize" class="form-select form-select-sm" style="width:auto;">
                 @{
                     var sizes = new[] { 10, 20, 50, 100 };
@@ -48,25 +48,25 @@
                     <th style="width:1%">#</th>
                     <th>
                         <a href="#" class="sort" data-col="NationalCode">
-                            National Code <span class="si" data-for="NationalCode"></span>
+                            کدملی<span class="si" data-for="NationalCode"></span>
                         </a>
                     </th>
                     <th>
                         <a href="#" class="sort" data-col="FirstName">
-                            First Name <span class="si" data-for="FirstName"></span>
+                            نام<span class="si" data-for="FirstName"></span>
                         </a>
                     </th>
                     <th>
                         <a href="#" class="sort" data-col="LastName">
-                            Last Name <span class="si" data-for="LastName"></span>
+                            نام‌خانوادگی<span class="si" data-for="LastName"></span>
                         </a>
                     </th>
                     <th>
                         <a href="#" class="sort" data-col="DocumentCount">
-                            Docs <span class="si" data-for="DocumentCount"></span>
+                            تعداد اسناد<span class="si" data-for="DocumentCount"></span>
                         </a>
                     </th>
-                    <th style="width:1%">Operations</th>
+                    <th style="width:1%">عملیات</th>
                 </tr>
             </thead>
             <tbody id="rows">
@@ -85,17 +85,17 @@
                             <td class="text-nowrap">
                                 <a class="btn btn-sm btn-outline-secondary btn-icon"
                                    asp-page="/Employees/Details" asp-route-id="@e.Id"
-                                   aria-label="Details" data-bs-toggle="tooltip" title="Details">
+                                   aria-label="Details" data-bs-toggle="tooltip" title="جزئیات">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <a class="btn btn-sm btn-outline-primary btn-icon"
                                    asp-page="/Employees/Edit" asp-route-id="@e.Id"
-                                   aria-label="Edit" data-bs-toggle="tooltip" title="Edit">
+                                   aria-label="Edit" data-bs-toggle="tooltip" title="ویرایش">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
                                 <a class="btn btn-sm btn-outline-dark btn-icon"
                                    asp-page="/Employees/Documents" asp-route-id="@e.Id"
-                                   aria-label="Documents" data-bs-toggle="tooltip" title="Documents">
+                                   aria-label="Documents" data-bs-toggle="tooltip" title="اسناد">
                                     <i class="bi bi-folder2-open"></i>
                                 </a>
                             </td>
@@ -113,7 +113,7 @@
             {
                 var from = (Model.Page.PageNumber - 1) * Model.Page.PageSize + 1;
                 var to = Math.Min(Model.Page.PageNumber * Model.Page.PageSize, Model.Page.TotalCount);
-                <span>Showing @(Model.Page.TotalCount == 0 ? 0 : from)–@(Model.Page.TotalCount == 0 ? 0 : to) of @Model.Page.TotalCount</span>
+                <span>نمایش @(Model.Page.TotalCount == 0 ? 0 : from)–@(Model.Page.TotalCount == 0 ? 0 : to) از @Model.Page.TotalCount</span>
             }
         </div>
         <nav aria-label="Employees pagination">
@@ -122,8 +122,8 @@
                     var hasPrev = Model.PageNumber > 1;
                     var hasNext = Model.Page is not null && (Model.Page.PageNumber * Model.Page.PageSize < Model.Page.TotalCount);
                 }
-                <li class="page-item @(hasPrev ? "" : "disabled")"><a class="page-link" href="#" data-nav="prev">Prev</a></li>
-                <li class="page-item @(hasNext ? "" : "disabled")"><a class="page-link" href="#" data-nav="next">Next</a></li>
+                <li class="page-item @(hasPrev ? "" : "disabled")"><a class="page-link" href="#" data-nav="prev">قبلی</a></li>
+                <li class="page-item @(hasNext ? "" : "disabled")"><a class="page-link" href="#" data-nav="next">بعدی</a></li>
             </ul>
         </nav>
     </div>

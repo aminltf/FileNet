@@ -1,4 +1,125 @@
-﻿html {
+﻿/* =========================
+   Fonts: Vazirmatn (Local)
+   ========================= */
+
+/* Thin (100) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-Thin.woff2") format("woff2");
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ExtraLight (200) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-ExtraLight.woff2") format("woff2");
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Light (300) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-Light.woff2") format("woff2");
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Regular (400) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Medium (500) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-Medium.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* SemiBold (600) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-SemiBold.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Bold (700) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ExtraBold (800) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-ExtraBold.woff2") format("woff2");
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Black (900) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-Black.woff2") format("woff2");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* اگر خواستی Variable version هم داشته باشی */
+@font-face {
+    font-family: "Vazirmatn Variable";
+    src: url("/fonts/Vazirmatn[wght].woff2") format("woff2-variations");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* =========================
+   Base Typography
+   ========================= */
+html, body {
+    font-family: "Vazirmatn", "Vazirmatn Variable", Tahoma, Arial, sans-serif;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* اعداد فارسی */
+.fa-digits {
+    font-family: "Vazirmatn", Tahoma, Arial, sans-serif !important;
+    font-feature-settings: "ss01"; /* اگر نسخه FD را اضافه کنی اینجا می‌توانی فعال کنی */
+}
+
+/* ورودی‌های LTR مثل کدملی/موبایل */
+.ltr-input {
+    direction: ltr !important;
+    text-align: left !important;
+    font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* =========================
+   استایل‌های قبلی پروژه
+   ========================= */
+
+html {
     font-size: 14px;
 }
 

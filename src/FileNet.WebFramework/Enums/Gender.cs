@@ -1,7 +1,9 @@
-﻿namespace FileNet.WebFramework.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FileNet.WebFramework.Enums;
 
 public enum Gender
 {
-    Male = 0,
-    Female = 1
+    [Display(Name = "مرد")] Male = 0,
+    [Display(Name = "زن")] Female = 1
 }

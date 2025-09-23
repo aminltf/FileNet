@@ -7,17 +7,17 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h2 class="mb-0">Documents</h2>
+            <h2 class="mb-0">اسناد</h2>
             @if (Model.Employee is not null)
             {
                 <div class="text-muted">
                     @Model.Employee.FirstName @Model.Employee.LastName
-                    <span class="mx-1">•</span>
-                    <small>NationalCode: @Model.Employee.NationalCode</small>
+                    <span class="mx-1">|</span>
+                    <small>کدملی: @Model.Employee.NationalCode</small>
                 </div>
             }
         </div>
-        <a class="btn btn-outline-secondary" asp-page="Index">Back</a>
+        <a class="btn btn-outline-secondary" asp-page="Index">بازگشت</a>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(Model.Success))
@@ -31,7 +31,7 @@
 
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Upload new document</span>
+            <span>بارگذاری سند جدید</span>
             <a class="btn btn-outline-secondary"
                href="filenet-scan://scan?employeeId=@Model.EmployeeId&category=0&title=@Uri.EscapeDataString($"Scan_{DateTime.Now:yyyyMMdd_HHmmss}")">
                 Scan with Epson
@@ -42,12 +42,12 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label asp-for="Input.Title" class="form-label">Title</label>
+                        <label asp-for="Input.Title" class="form-label">عنوان</label>
                         <input asp-for="Input.Title" class="form-control" />
                         <span asp-validation-for="Input.Title" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="Input.Category" class="form-label">Category</label>
+                        <label asp-for="Input.Category" class="form-label">دسته‌بندی</label>
                         <select asp-for="Input.Category" class="form-select">
                             @foreach (var c in FileNet.WebApplication.Pages.Employees.DocumentsModel.Categories)
                             {
@@ -57,13 +57,13 @@
                         <span asp-validation-for="Input.Category" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label asp-for="Input.File" class="form-label">File</label>
+                        <label asp-for="Input.File" class="form-label">فایل</label>
                         <input asp-for="Input.File" class="form-control" type="file" />
                         <span asp-validation-for="Input.File" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="submit" class="btn btn-primary">بارگذاری</button>
                 </div>
             </form>
         </div>
@@ -76,13 +76,13 @@
                 <thead>
                     <tr>
                         <th style="width:1%">#</th>
-                        <th>Title</th>
-                        <th>Category</th>
-                        <th>File name</th>
-                        <th>Size</th>
-                        <th>Type</th>
-                        <th>Created</th>
-                        <th style="width:1%">Operations</th>
+                        <th>عنوان</th>
+                        <th>دسته‌بندی</th>
+                        <th>نام فایل</th>
+                        <th>اندازه</th>
+                        <th>نوع</th>
+                        <th>ایجاد</th>
+                        <th style="width:1%">عملیات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -104,7 +104,7 @@
                                        asp-page-handler="Download"
                                        asp-route-id="@Model.EmployeeId"
                                        asp-route-docId="@d.Id"
-                                       aria-label="Download" data-bs-toggle="tooltip" title="Download">
+                                       aria-label="Download" data-bs-toggle="tooltip" title="دریافت">
                                         <i class="bi bi-download"></i>
                                     </a>
 
@@ -116,7 +116,7 @@
                                           onsubmit="return confirm('Delete this document?');">
                                         <button class="btn btn-sm btn-outline-danger btn-icon"
                                                 type="submit"
-                                                aria-label="Delete" data-bs-toggle="tooltip" title="Delete">
+                                                aria-label="Delete" data-bs-toggle="tooltip" title="حذف">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -127,7 +127,7 @@
                                             data-docid="@d.Id"
                                             data-name="@d.FileName"
                                             data-type="@d.ContentType"
-                                            aria-label="Preview" data-bs-toggle="tooltip" title="Preview">
+                                            aria-label="Preview" data-bs-toggle="tooltip" title="نمایش">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </td>

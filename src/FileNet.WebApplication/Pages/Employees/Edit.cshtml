@@ -6,8 +6,8 @@
 
 <div class="container mt-4" style="max-width:720px">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">Edit Employee</h2>
-        <a class="btn btn-outline-secondary" asp-page="Details" asp-route-id="@Model.Id">Back</a>
+        <h2 class="mb-0">ویرایش کارمند</h2>
+        <a class="btn btn-outline-secondary" asp-page="Details" asp-route-id="@Model.Id">بازگشت</a>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(Model.Error))
@@ -37,7 +37,7 @@
             <span class="text-danger" asp-validation-for="Input.LastName"></span>
         </div>
         <div class="mb-3">
-            <label asp-for="Input.Gender" class="form-label">Gender</label>
+            <label asp-for="Input.Gender" class="form-label">جنسیت</label>
             <select asp-for="Input.Gender" class="form-select">
                 @foreach (var c in FileNet.WebApplication.Pages.Employees.CreateModel.Genders)
                 {
@@ -47,15 +47,15 @@
             <span asp-validation-for="Input.Gender" class="text-danger"></span>
         </div>
         <div class="mb-4">
-            <label asp-for="Input.DepartmentId" class="form-label">Department</label>
+            <label asp-for="Input.DepartmentId" class="form-label">دپارتمان</label>
             <select asp-for="Input.DepartmentId" class="form-select" asp-items="Model.DepartmentOptions">
                 <option value="" selected disabled>Select Department</option>
             </select>
             <span asp-validation-for="Input.DepartmentId" class="text-danger"></span>
         </div>
         <div class="d-flex gap-2">
-            <button class="btn btn-primary" type="submit">Save</button>
-            <a class="btn btn-outline-secondary" asp-page="Details" asp-route-id="@Model.Id">Cancel</a>
+            <button class="btn btn-primary" type="submit">ذخیره</button>
+            <a class="btn btn-outline-secondary" asp-page="Details" asp-route-id="@Model.Id">بازگشت</a>
         </div>
     </form>
 </div>

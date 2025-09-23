@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using FileNet.WebFramework.Contracts.Departments;
 using FileNet.WebFramework.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
@@ -59,12 +59,15 @@ public class EditModel(IDepartmentService service) : PageModel
     public class EditDepartmentInput
     {
         [Required]
+        [Display(Name = "کد")]
         public string Code { get; set; } = default!;
 
         [Required]
+        [Display(Name = "نام")]
         public string Name { get; set; } = default!;
 
         [StringLength(100)]
+        [Display(Name = "توضیحات")]
         public string? Description { get; set; }
     }
 }
