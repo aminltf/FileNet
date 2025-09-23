@@ -4,7 +4,6 @@ using FileNet.WebFramework.Enums;
 using FileNet.WebFramework.Services.Implementations;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Text;
 

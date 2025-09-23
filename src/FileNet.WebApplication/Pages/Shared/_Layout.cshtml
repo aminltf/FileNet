@@ -43,6 +43,17 @@
                         </li>
                     </ul>
                 </div>
+                @if (User?.Identity?.IsAuthenticated ?? false)
+                {
+                    <div class="ms-auto small text-muted">
+                        <span class="me-2">کاربر: @User.Identity!.Name</span>
+                        @* <span>IP: @(Context.Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',')[0] ?? Context.Connection.RemoteIpAddress?.ToString())</span> *@
+
+                        <form class="d-inline ms-3" method="post" asp-page="/Account/Logout">
+                            <button class="btn btn-sm btn-outline-danger">خروج</button>
+                        </form>
+                    </div>
+                }
             </div>
         </nav>
     </header>

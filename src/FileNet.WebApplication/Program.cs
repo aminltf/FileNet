@@ -1,7 +1,9 @@
 using System.Globalization;
 using FileNet.WebFramework;
+using FileNet.WebFramework.Entities.Identity;
 using FileNet.WebFramework.ScanIngest;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,7 +12,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services
-    .AddRazorPages()
+    .AddRazorPages(opt =>
+    {
+        opt.Conventions.AuthorizeFolder("/");
+        opt.Conventions.AllowAnonymousToPage("/Account/Login");
+        opt.Conventions.AllowAnonymousToPage("/Account/AccessDenied");
+        opt.Conventions.AllowAnonymousToPage("/Account/Refresh");
+    })
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
 builder.Services.AddWebFramework(builder.Configuration);
@@ -60,11 +68,35 @@ app.UseRequestLocalization(locOptions);
 app.UseHttpsRedirection();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
+
+using (var scope = app.Services.CreateScope())
+{
+    var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+    var adminRole = "Admin";
+    if (!await roleMgr.RoleExistsAsync(adminRole))
+        await roleMgr.CreateAsync(new IdentityRole<Guid>(adminRole));
+
+    var u = await userMgr.FindByNameAsync("admin");
+    if (u is null)
+    {
+        u = new ApplicationUser
+        {
+            UserName = "admin",
+            Email = "admin@local",
+            DisplayName = "System Admin",
+            EmailConfirmed = true
+        };
+        await userMgr.CreateAsync(u, "P@ssw0rd!");
+        await userMgr.AddToRoleAsync(u, adminRole);
+    }
+}
 
 app.Run();
