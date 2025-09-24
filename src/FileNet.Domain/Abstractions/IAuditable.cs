@@ -1,9 +1,15 @@
 ﻿namespace FileNet.Domain.Abstractions;
 
-public interface IAuditable
+/// <summary>
+/// Creation & modification audit info. Store all timestamps in UTC.
+/// </summary>
+public interface IAuditable<TUserId>
+    where TUserId : IEquatable<TUserId>
 {
-    string? CreatedBy { get; set; }
-    DateTimeOffset CreatedOn { get; set; }
-    string? UpdatedBy { get; set; }
-    DateTimeOffset? UpdatedOn { get; set; }
+    /// <remarks>May be null for system actions (seeders, jobs...)</remarks>
+    TUserId? CreatedById { get; set; }
+    DateTimeOffset CreatedOn { get; set; }   // should be UTC
+
+    TUserId? ModifiedById { get; set; }
+    DateTimeOffset? ModifiedOn { get; set; } // null when never modified
 }

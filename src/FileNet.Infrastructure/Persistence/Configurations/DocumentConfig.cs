@@ -1,4 +1,5 @@
-﻿using FileNet.Domain.Entities;
+﻿using FileNet.Domain.Constants;
+using FileNet.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -6,36 +7,53 @@ namespace FileNet.Infrastructure.Persistence.Configurations;
 
 public class DocumentConfig : IEntityTypeConfiguration<Document>
 {
-    public void Configure(EntityTypeBuilder<Document> builder)
+    public void Configure(EntityTypeBuilder<Document> b)
     {
-        builder.ToTable("Documents");
+        b.ToTable("Documents");
 
-        builder.HasKey(x => x.Id);
+        b.HasKey(x => x.Id);
 
-        builder.Property(x => x.Title)
-            .HasMaxLength(256);
+        b.Property(x => x.ConcurrencyToken).IsRowVersion();
 
-        builder.Property(x => x.FileName)
-            .HasMaxLength(260).IsRequired();
+        b.Property(x => x.EmployeeId).IsRequired();
 
-        builder.Property(x => x.ContentType)
-            .HasMaxLength(127).IsRequired();
+        b.Property(x => x.Title)
+         .HasMaxLength(DomainModelConstraints.DocumentTitleMaxLen)
+         .IsRequired();
 
-        builder.Property(x => x.Size)
-            .HasColumnType("bigint").IsRequired();
+        b.Property(x => x.FileName)
+         .HasMaxLength(DomainModelConstraints.FileNameMaxLen)
+         .IsRequired();
 
-        builder.Property(x => x.Category)
-            .HasConversion<byte>().IsRequired();
+        b.Property(x => x.ContentType)
+         .HasMaxLength(DomainModelConstraints.ContentTypeMaxLen)
+         .IsRequired();
 
-        builder.Property(x => x.Data)
-            .HasColumnType("varbinary(max)").IsRequired();
+        b.Property(x => x.SizeBytes).IsRequired();
 
-        builder.HasOne(x => x.Employee)
-             .WithMany(y => y.Documents)
-             .HasForeignKey(x => x.EmployeeId)
-             .OnDelete(DeleteBehavior.Cascade);
+        b.Property(x => x.Category)
+         .HasConversion<short>() // map enum to SMALLINT
+         .IsRequired();
 
-        builder.HasIndex(x => x.EmployeeId);
-        builder.HasIndex(x => new { x.EmployeeId, x.Category });
+        // store file payload in DB (varbinary(max))
+        b.Property(x => x.Data)
+         .HasColumnType("varbinary(max)")
+         .IsRequired();
+
+        b.Property(x => x.CreatedOn).IsRequired();
+        b.Property(x => x.ModifiedOn);
+
+        b.HasQueryFilter(x => !x.IsDeleted);
+
+        // Relation to Employee (restrict delete across aggregates)
+        b.HasOne<Employee>()
+         .WithMany()
+         .HasForeignKey(x => x.EmployeeId)
+         .OnDelete(DeleteBehavior.Restrict);
+
+        // Avoid duplicate file names per employee when active
+        b.HasIndex(x => new { x.EmployeeId, x.FileName })
+         .IsUnique()
+         .HasFilter("[IsDeleted] = 0 AND [FileName] IS NOT NULL");
     }
 }

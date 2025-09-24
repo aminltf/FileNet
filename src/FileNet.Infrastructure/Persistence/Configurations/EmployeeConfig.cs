@@ -1,4 +1,5 @@
-﻿using FileNet.Domain.Entities;
+﻿using FileNet.Domain.Constants;
+using FileNet.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -6,29 +7,54 @@ namespace FileNet.Infrastructure.Persistence.Configurations;
 
 public class EmployeeConfig : IEntityTypeConfiguration<Employee>
 {
-    public void Configure(EntityTypeBuilder<Employee> builder)
+    public void Configure(EntityTypeBuilder<Employee> b)
     {
-        builder.ToTable("Employees");
+        b.ToTable("Employees");
 
-        builder.HasKey(x => x.Id);
+        b.HasKey(x => x.Id);
 
-        builder.Property(x => x.NationalCode)
-            .HasMaxLength(20).IsRequired();
+        b.Property(x => x.ConcurrencyToken).IsRowVersion();
 
-        builder.Property(x => x.FirstName)
-            .HasMaxLength(100).IsRequired();
+        b.Property(x => x.DepartmentId).IsRequired();
 
-        builder.Property(x => x.LastName)
-            .HasMaxLength(100).IsRequired();
+        b.Property(x => x.NationalCode)
+         .HasMaxLength(DomainModelConstraints.NationalCodeMaxLen)
+         .IsRequired();
 
-        builder.Property(x => x.Gender)
-            .HasConversion<byte>().IsRequired();
+        b.Property(x => x.EmployeeCode)
+         .HasMaxLength(DomainModelConstraints.EmployeeCodeMaxLen)
+         .IsRequired();
 
-        builder.HasOne(x => x.Department)
-             .WithMany(y => y.Employees)
-             .HasForeignKey(x => x.DepartmentId)
-             .OnDelete(DeleteBehavior.Restrict);
+        b.Property(x => x.FirstName)
+         .HasMaxLength(DomainModelConstraints.FirstNameMaxLen)
+         .IsRequired();
 
-        builder.HasIndex(x => x.NationalCode).IsUnique();
+        b.Property(x => x.LastName)
+         .HasMaxLength(DomainModelConstraints.LastNameMaxLen)
+         .IsRequired();
+
+        b.Property(x => x.Gender)
+         .HasConversion<short>() // map enum to SMALLINT
+         .IsRequired();
+
+        b.Property(x => x.CreatedOn).IsRequired();
+        b.Property(x => x.ModifiedOn);
+
+        b.HasQueryFilter(x => !x.IsDeleted);
+
+        // Optional: enforce FK in DB
+        b.HasOne<Department>()
+         .WithMany()
+         .HasForeignKey(x => x.DepartmentId)
+         .OnDelete(DeleteBehavior.Restrict);
+
+        // Unique constraints with soft-delete filter
+        b.HasIndex(x => x.NationalCode)
+         .IsUnique()
+         .HasFilter("[IsDeleted] = 0 AND [NationalCode] IS NOT NULL");
+
+        b.HasIndex(x => x.EmployeeCode)
+         .IsUnique()
+         .HasFilter("[IsDeleted] = 0 AND [EmployeeCode] IS NOT NULL");
     }
 }

@@ -1,4 +1,5 @@
-﻿using FileNet.Domain.Entities;
+﻿using FileNet.Domain.Constants;
+using FileNet.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -6,22 +7,38 @@ namespace FileNet.Infrastructure.Persistence.Configurations;
 
 public class DepartmentConfig : IEntityTypeConfiguration<Department>
 {
-    public void Configure(EntityTypeBuilder<Department> builder)
+    public void Configure(EntityTypeBuilder<Department> b)
     {
-        builder.ToTable("Departments");
-        
-        builder.HasKey(x => x.Id);
+        b.ToTable("Departments");
 
-        builder.Property(x => x.Code)
-            .HasMaxLength(31).IsRequired();
+        b.HasKey(x => x.Id);
 
-        builder.Property(x => x.Name)
-            .HasMaxLength(127).IsRequired();
+        // Concurrency
+        b.Property(x => x.ConcurrencyToken)
+         .IsRowVersion(); // SQL Server. For other providers: IsConcurrencyToken() + ValueGeneratedOnAddOrUpdate()
 
-        builder.Property(x => x.Description)
-            .HasMaxLength(511);
+        // Requireds & lengths
+        b.Property(x => x.Code)
+         .HasMaxLength(DomainModelConstraints.DepartmentCodeMaxLen)
+         .IsRequired();
 
-        builder.HasIndex(d => d.Code).IsUnique();
-        builder.HasIndex(d => d.Name).IsUnique();
+        b.Property(x => x.Name)
+         .HasMaxLength(DomainModelConstraints.DepartmentNameMaxLen)
+         .IsRequired();
+
+        b.Property(x => x.Description)
+         .HasMaxLength(DomainModelConstraints.DepartmentDescriptionMaxLen);
+
+        // Audit timestamps
+        b.Property(x => x.CreatedOn).IsRequired();
+        b.Property(x => x.ModifiedOn);
+
+        // SoftDelete global query filter
+        b.HasQueryFilter(x => !x.IsDeleted);
+
+        // Filtered unique index
+        b.HasIndex(x => x.Code)
+         .IsUnique()
+         .HasFilter("[IsDeleted] = 0 AND [Code] IS NOT NULL");
     }
 }

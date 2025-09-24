@@ -57,20 +57,5 @@ public static class IdentitySeeder
             await userMgr.CreateAsync(manager, "P@ssw0rd!");
             await userMgr.AddToRoleAsync(manager, AppRoles.Manager);
         }
-
-        // User
-        var user = await userMgr.FindByNameAsync("user");
-        if (user is null)
-        {
-            user = new ApplicationUser
-            {
-                UserName = "user",
-                Email = "user@local",
-                DisplayName = "HR user",
-                EmailConfirmed = true
-            };
-            await userMgr.CreateAsync(user, "P@ssw0rd!");
-            await userMgr.AddToRoleAsync(user, AppRoles.Manager);
-        }
     }
 }

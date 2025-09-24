@@ -1,8 +1,4 @@
-﻿using FileNet.Application.Common.Abstractions.Repositories;
-using FileNet.Application.Common.Abstractions.UoW;
-using FileNet.Infrastructure.Persistence.Contexts;
-using FileNet.Infrastructure.Persistence.Repositories;
-using FileNet.Infrastructure.Persistence.UoW;
+﻿using FileNet.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,12 +11,6 @@ public static class InfrastructureConfigurationExtensions
     {
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("Default")));
-
-        services.AddScoped<IDepartmentRepository, DepartmentRepository>();
-        services.AddScoped<IDocumentRepository, DocumentRepository>();
-        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-
-        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
         return services;
     }
