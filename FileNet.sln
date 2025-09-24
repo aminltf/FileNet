@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileNet.Infrastructure", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileNet.ScanLauncher", "src\FileNet.ScanLauncher\FileNet.ScanLauncher.csproj", "{646FBEEC-8CF7-4278-B4F1-56F71E24EF33}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileNet.API", "src\FileNet.API\FileNet.API.csproj", "{65EB1BF1-4CB7-4C2E-B789-0FB7946571D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{646FBEEC-8CF7-4278-B4F1-56F71E24EF33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{646FBEEC-8CF7-4278-B4F1-56F71E24EF33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{646FBEEC-8CF7-4278-B4F1-56F71E24EF33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65EB1BF1-4CB7-4C2E-B789-0FB7946571D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65EB1BF1-4CB7-4C2E-B789-0FB7946571D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65EB1BF1-4CB7-4C2E-B789-0FB7946571D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65EB1BF1-4CB7-4C2E-B789-0FB7946571D6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{0262F403-CF14-4304-9C3A-2C944F8AB43D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{A120CCDE-64F6-4EF9-9F2A-ECD9057D12E1} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{646FBEEC-8CF7-4278-B4F1-56F71E24EF33} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{65EB1BF1-4CB7-4C2E-B789-0FB7946571D6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {73AFDF8B-0A3D-41E5-AE7F-92533DEA77D3}
