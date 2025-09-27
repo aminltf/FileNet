@@ -1,6 +1,0 @@
-@FileNet.API_HostAddress = http://localhost:5005
-
-GET {{FileNet.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
