@@ -84,9 +84,13 @@
                                 <i class="bi bi-folder2-open"></i>
                             </a>
 
-                            <form method="post" asp-page-handler="Delete" asp-route-id="@e.Id"
+                            <!-- Delete by SweetAlert2 -->
+                            <form method="post"
+                                  asp-page-handler="Delete"
+                                  asp-route-id="@e.Id"
                                   class="d-inline ajax-delete"
-                                  onsubmit="return confirm('Delete this employee? All related documents will be removed.');">
+                                  data-emp-name="@($"{e.FirstName} {e.LastName}")"
+                                  data-doc-count="@e.DocumentCount">
                                 <button class="btn btn-sm btn-outline-danger btn-icon"
                                         type="submit" aria-label="Delete"
                                         data-bs-toggle="tooltip" title="حذف">
@@ -94,7 +98,6 @@
                                 </button>
                             </form>
                         </td>
-
                     </tr>
                     i++;
                 }
@@ -125,6 +128,9 @@
 </div>
 
 @section Scripts {
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         (() => {
           const state = {
@@ -144,7 +150,6 @@
 
           const baseUrl = window.location.pathname;
 
-          const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
           const qstr = () => {
             const p = new URLSearchParams();
             p.set('PageNumber', state.pageNumber);
@@ -161,9 +166,9 @@
           };
 
           async function loadPartial() {
-            rows.innerHTML = `<tr><td colspan="5" class="text-center py-4">
+            rows.innerHTML = `<tr><td colspan="6" class="text-center py-4">
               <div class="spinner-border" role="status" aria-hidden="true"></div>
-              <span class="ms-2">Loading...</span>
+              <span class="ms-2">در حال بارگذاری...</span>
             </td></tr>`;
 
             const url = `${baseUrl}?${qstr()}`;
@@ -178,28 +183,66 @@
               pager.innerHTML   = (doc.querySelector('#pager')?.innerHTML)   ?? '';
 
               setSortIndicators();
-              window.history.replaceState({}, '', url);
-
+              if (window.initTooltips) window.initTooltips();
               bindAjaxDelete();
+
+              window.history.replaceState({}, '', url);
             } catch (e) {
               console.error(e);
-              rows.innerHTML = `<tr><td colspan="5" class="text-danger text-center">Error loading data.</td></tr>`;
+              rows.innerHTML = `<tr><td colspan="6" class="text-danger text-center">خطا در بارگذاری.</td></tr>`;
             }
           }
 
           function bindAjaxDelete() {
             document.querySelectorAll('form.ajax-delete').forEach(f => {
+              // از دوباره بایند شدن جلوگیری کنیم
+              if (f.dataset.bound === '1') return;
+              f.dataset.bound = '1';
+
               f.addEventListener('submit', async ev => {
                 ev.preventDefault();
                 const form = ev.currentTarget;
+                const empName = form.getAttribute('data-emp-name') || 'کاربر';
+                const docCount = form.getAttribute('data-doc-count') || '0';
+
+                const result = await Swal.fire({
+                  title: 'حذف کارمند',
+                  html: `<div class="text-start">آیا از حذف <b>${empName}</b> مطمئن هستید؟<br/>` +
+                        `تعداد اسناد مرتبط: <b>${docCount}</b></div>`,
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonText: 'بله، حذف شود',
+                  cancelButtonText: 'انصراف',
+                  confirmButtonColor: '#d33',
+                  cancelButtonColor: '#3085d6',
+                  reverseButtons: true
+                });
+
+                if (!result.isConfirmed) return;
+
                 const formData = new FormData(form);
                 try {
-                  const res = await fetch(form.action || (baseUrl + '?handler=Delete'), { method: 'POST', body: formData });
+                  const res = await fetch(form.action || (baseUrl + '?handler=Delete'), {
+                    method: 'POST',
+                    body: formData
+                  });
                   if (!res.ok) throw new Error('Delete failed');
+
+                  await Swal.fire({
+                    icon: 'success',
+                    title: 'حذف شد',
+                    timer: 1200,
+                    showConfirmButton: false
+                  });
+
                   await loadPartial();
                 } catch (e) {
                   console.error(e);
-                  alert('Error deleting the item.');
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'خطا',
+                    text: 'حذف انجام نشد. لطفاً دوباره تلاش کنید.'
+                  });
                 }
               }, { once: false });
             });
@@ -259,7 +302,6 @@
             new bootstrap.Tooltip(el);
           });
         }
-
         initTooltips();
     </script>
 }

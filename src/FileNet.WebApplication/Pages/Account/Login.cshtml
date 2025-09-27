@@ -3,31 +3,108 @@
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Login";
+    ViewData["HideChrome"] = true; // هدر و فوتر پنهان
 }
-<div class="container" style="max-width:420px">
-    <h3 class="mt-4 mb-3 text-center">ورود به سامانه فایل‌نت</h3>
 
-    @if (!string.IsNullOrWhiteSpace(Model.Error))
-    {
-        <div class="alert alert-danger">@Model.Error</div>
-    }
+<div class="login-page d-flex align-items-center justify-content-center min-vh-100">
+    <div class="login-card card border-0 shadow-lg p-4" style="max-width:420px; width:100%;">
+        <h4 class="text-center mb-4 fw-bold text-primary">ورود به سامانه فایل‌نت</h4>
 
-    <form method="post">
-        <input type="hidden" asp-for="ReturnUrl" />
-        <div class="mb-3">
-            <label asp-for="Input.UserName" class="form-label"></label>
-            <input asp-for="Input.UserName" class="form-control" autocomplete="username" />
-            <span class="text-danger" asp-validation-for="Input.UserName"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Input.Password" class="form-label"></label>
-            <input asp-for="Input.Password" class="form-control" type="password" autocomplete="current-password" />
-            <span class="text-danger" asp-validation-for="Input.Password"></span>
-        </div>
-        <div class="form-check mb-3">
-            <input class="form-check-input" asp-for="Input.RememberMe" />
-            <label class="form-check-label" asp-for="Input.RememberMe"></label>
-        </div>
-        <button class="btn btn-primary w-100" type="submit">ورود</button>
-    </form>
+        @if (!string.IsNullOrWhiteSpace(Model.Error))
+        {
+            <div class="alert alert-danger text-center">@Model.Error</div>
+        }
+
+        <form method="post" novalidate>
+            <input type="hidden" asp-for="ReturnUrl" />
+
+            <div class="mb-3">
+                <label asp-for="Input.UserName" class="form-label fw-semibold"></label>
+                <input asp-for="Input.UserName" class="form-control rounded-pill" autocomplete="username" />
+                <span class="text-danger small" asp-validation-for="Input.UserName"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Password" class="form-label fw-semibold"></label>
+                <div class="input-group">
+                    <input asp-for="Input.Password"
+                           id="Input_Password"
+                           class="form-control rounded-start-pill"
+                           type="password"
+                           autocomplete="current-password" />
+                    <button type="button"
+                            class="btn btn-outline-secondary rounded-end-pill"
+                            id="togglePassword"
+                            aria-label="نمایش/مخفی کردن رمز"
+                            title="نمایش/مخفی کردن رمز">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+                <span class="text-danger small" asp-validation-for="Input.Password"></span>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" asp-for="Input.RememberMe" />
+                <label class="form-check-label" asp-for="Input.RememberMe"></label>
+            </div>
+
+            <button class="btn btn-primary w-100 rounded-pill fw-bold py-2" type="submit">
+                ورود
+            </button>
+        </form>
+    </div>
 </div>
+
+@section Scripts {
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background: #4facfe;
+        }
+
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: #fff;
+            border-radius: 1.25rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        .form-control:focus {
+            border-color: #6a82fb;
+            box-shadow: 0 0 0 0.2rem rgba(106, 130, 251, 0.25);
+        }
+
+        .btn-primary {
+            background: #6a82fb;
+            border: none;
+            transition: background 0.3s ease;
+        }
+
+            .btn-primary:hover {
+                background: #5b72e7;
+            }
+    </style>
+
+    <script>
+        (function () {
+            var pwd = document.getElementById('Input_Password');
+            var btn = document.getElementById('togglePassword');
+            if (!pwd || !btn) return;
+            var icon = btn.querySelector('i');
+
+            btn.addEventListener('click', function () {
+                var isText = pwd.type === 'text';
+                pwd.type = isText ? 'password' : 'text';
+                icon.classList.toggle('bi-eye', isText);
+                icon.classList.toggle('bi-eye-slash', !isText);
+            });
+        })();
+    </script>
+}
