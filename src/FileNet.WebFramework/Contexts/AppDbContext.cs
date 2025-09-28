@@ -7,6 +7,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Document> Documents => Set<Document>();
+    public DbSet<Dependent> Dependents => Set<Dependent>();
     public DbSet<Department> Departments => Set<Department>();
 
     protected override void OnModelCreating(ModelBuilder model)
@@ -51,6 +52,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             b.HasIndex(d => d.EmployeeId);
             b.HasIndex(d => new { d.EmployeeId, d.Category });
+        });
+
+        // Dependent
+        model.Entity<Dependent>(b =>
+        {
+            b.ToTable("Dependnets");
+            b.HasKey(d => d.Id);
+
+            b.Property(e => e.FirstName).HasMaxLength(100).IsRequired();
+            b.Property(e => e.LastName).HasMaxLength(100).IsRequired();
+            b.Property(e => e.NationalCode).HasMaxLength(20).IsRequired();
+
+            b.Property(d => d.Gender).HasConversion<byte>().IsRequired();
+            b.Property(d => d.Relation).HasConversion<byte>().IsRequired();
+
+            b.HasOne(d => d.Employee)
+             .WithMany(e => e.Dependents)
+             .HasForeignKey(d => d.EmployeeId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            b.HasIndex(e => e.NationalCode).IsUnique();
         });
 
         // Department

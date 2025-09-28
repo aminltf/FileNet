@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
+        services.AddScoped<IDependentService, DependentService>();
 
         // Identity
         var cs = cfg.GetConnectionString("Default")!;

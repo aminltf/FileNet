@@ -18,6 +18,7 @@ public class Employee
     public Department Department { get; set; } = default!;
 
     public ICollection<Document> Documents { get; set; } = new List<Document>();
+    public ICollection<Dependent> Dependents { get; set; } = new List<Dependent>();
 
     public Employee()
     {
